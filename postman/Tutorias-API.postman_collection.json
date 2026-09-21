@@ -1,0 +1,178 @@
+{
+  "info": {
+    "name": "Tutorias API - Entrega 2",
+    "description": "Coleccion para probar los endpoints CRUD del backend del Sistema de Gestion de Tutorias Universitarias.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" }
+  ],
+  "item": [
+    {
+      "name": "Materias",
+      "item": [
+        {
+          "name": "Listar materias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/api/materias", "host": ["{{base_url}}"], "path": ["api", "materias"] }
+          }
+        },
+        {
+          "name": "Crear materia",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Bases de Datos\",\n  \"descripcion\": \"Modelado y administracion de bases de datos relacionales\",\n  \"estado\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/materias", "host": ["{{base_url}}"], "path": ["api", "materias"] }
+          }
+        },
+        {
+          "name": "Obtener materia por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/api/materias/1", "host": ["{{base_url}}"], "path": ["api", "materias", "1"] }
+          }
+        },
+        {
+          "name": "Actualizar materia",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Bases de Datos Avanzadas\",\n  \"descripcion\": \"Modelado, normalizacion y administracion avanzada\",\n  \"estado\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/materias/1", "host": ["{{base_url}}"], "path": ["api", "materias", "1"] }
+          }
+        },
+        {
+          "name": "Eliminar materia",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/api/materias/1", "host": ["{{base_url}}"], "path": ["api", "materias", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/api/usuarios", "host": ["{{base_url}}"], "path": ["api", "usuarios"] }
+          }
+        },
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Eduardo\",\n  \"apellido\": \"Bettin\",\n  \"correo\": \"eduardo.bettin@example.com\",\n  \"password\": \"claveSegura123\",\n  \"rol\": \"ESTUDIANTE\",\n  \"estado\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/usuarios", "host": ["{{base_url}}"], "path": ["api", "usuarios"] }
+          }
+        },
+        {
+          "name": "Obtener usuario por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/api/usuarios/1", "host": ["{{base_url}}"], "path": ["api", "usuarios", "1"] }
+          }
+        },
+        {
+          "name": "Actualizar usuario",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Eduardo Julio\",\n  \"apellido\": \"Bettin Avilez\",\n  \"correo\": \"eduardo.bettin@example.com\",\n  \"rol\": \"ESTUDIANTE\",\n  \"estado\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/usuarios/1", "host": ["{{base_url}}"], "path": ["api", "usuarios", "1"] }
+          }
+        },
+        {
+          "name": "Eliminar usuario",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/api/usuarios/1", "host": ["{{base_url}}"], "path": ["api", "usuarios", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tutores",
+      "item": [
+        { "name": "Listar tutores", "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/api/tutores", "host": ["{{base_url}}"], "path": ["api", "tutores"] } } },
+        {
+          "name": "Crear tutor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"usuario\": { \"id\": 2 },\n  \"especialidad\": \"Bases de Datos\",\n  \"descripcion\": \"Tutor con experiencia en modelado relacional\",\n  \"disponibilidad\": \"Lunes y miercoles 3-5pm\"\n}" },
+            "url": { "raw": "{{base_url}}/api/tutores", "host": ["{{base_url}}"], "path": ["api", "tutores"] }
+          }
+        },
+        { "name": "Obtener tutor por id", "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/api/tutores/1", "host": ["{{base_url}}"], "path": ["api", "tutores", "1"] } } },
+        { "name": "Eliminar tutor", "request": { "method": "DELETE", "header": [], "url": { "raw": "{{base_url}}/api/tutores/1", "host": ["{{base_url}}"], "path": ["api", "tutores", "1"] } } }
+      ]
+    },
+    {
+      "name": "Tutorias",
+      "item": [
+        { "name": "Listar tutorias", "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/api/tutorias", "host": ["{{base_url}}"], "path": ["api", "tutorias"] } } },
+        {
+          "name": "Crear tutoria",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"tutor\": { \"id\": 1 },\n  \"materia\": { \"id\": 1 },\n  \"fecha\": \"2026-10-05\",\n  \"hora\": \"15:00:00\",\n  \"modalidad\": \"VIRTUAL\",\n  \"lugar\": \"Meet\",\n  \"descripcion\": \"Repaso de normalizacion\",\n  \"estado\": \"DISPONIBLE\"\n}" },
+            "url": { "raw": "{{base_url}}/api/tutorias", "host": ["{{base_url}}"], "path": ["api", "tutorias"] }
+          }
+        },
+        { "name": "Obtener tutoria por id", "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/api/tutorias/1", "host": ["{{base_url}}"], "path": ["api", "tutorias", "1"] } } },
+        { "name": "Eliminar tutoria", "request": { "method": "DELETE", "header": [], "url": { "raw": "{{base_url}}/api/tutorias/1", "host": ["{{base_url}}"], "path": ["api", "tutorias", "1"] } } }
+      ]
+    },
+    {
+      "name": "Solicitudes",
+      "item": [
+        { "name": "Listar solicitudes", "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/api/solicitudes", "host": ["{{base_url}}"], "path": ["api", "solicitudes"] } } },
+        {
+          "name": "Crear solicitud",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"estudiante\": { \"id\": 3 },\n  \"tutoria\": { \"id\": 1 },\n  \"estado\": \"PENDIENTE\",\n  \"comentario\": \"Necesito apoyo con normalizacion\"\n}" },
+            "url": { "raw": "{{base_url}}/api/solicitudes", "host": ["{{base_url}}"], "path": ["api", "solicitudes"] }
+          }
+        },
+        { "name": "Obtener solicitud por id", "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/api/solicitudes/1", "host": ["{{base_url}}"], "path": ["api", "solicitudes", "1"] } } },
+        {
+          "name": "Actualizar solicitud (aceptar)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"ACEPTADA\",\n  \"comentario\": \"Confirmada por el tutor\"\n}" },
+            "url": { "raw": "{{base_url}}/api/solicitudes/1", "host": ["{{base_url}}"], "path": ["api", "solicitudes", "1"] }
+          }
+        },
+        { "name": "Eliminar solicitud", "request": { "method": "DELETE", "header": [], "url": { "raw": "{{base_url}}/api/solicitudes/1", "host": ["{{base_url}}"], "path": ["api", "solicitudes", "1"] } } }
+      ]
+    }
+  ]
+}

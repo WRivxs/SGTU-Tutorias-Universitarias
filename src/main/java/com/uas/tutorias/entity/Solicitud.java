@@ -1,5 +1,6 @@
 package com.uas.tutorias.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Solicitud {
 
     @Id
@@ -21,10 +23,12 @@ public class Solicitud {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "estudiante_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password"})
     private Usuario estudiante;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tutoria_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Tutoria tutoria;
 
     @Column(name = "fecha_solicitud", nullable = false, updatable = false)

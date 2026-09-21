@@ -1,10 +1,9 @@
 package com.uas.tutorias.controller;
 
 import com.uas.tutorias.entity.Tutor;
-import com.uas.tutorias.exception.ResourceNotFoundException;
-import com.uas.tutorias.repository.TutorRepository;
+import com.uas.tutorias.service.TutorService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,44 +12,47 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/tutores")
+@RequiredArgsConstructor
 public class TutorController {
 
-    @Autowired
-    private TutorRepository tutorRepository;
+    private final TutorService tutorService;
 
+    // GET /api/tutores
     @GetMapping
-    public List<Tutor> listar() {
-        return tutorRepository.findAll();
+    public ResponseEntity<List<Tutor>> listar() {
+        return ResponseEntity.ok(tutorService.listarTodos());
     }
 
+    // GET /api/tutores/{id}
     @GetMapping("/{id}")
     public ResponseEntity<Tutor> obtener(@PathVariable Long id) {
-        Tutor tutor = tutorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tutor no encontrado con id: " + id));
-        return ResponseEntity.ok(tutor);
+        return ResponseEntity.ok(tutorService.obtenerPorId(id));
     }
 
+    // GET /api/tutores/usuario/{usuarioId}
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<Tutor> obtenerPorUsuario(@PathVariable Long usuarioId) {
+        return ResponseEntity.ok(tutorService.obtenerPorUsuarioId(usuarioId));
+    }
+
+    // POST /api/tutores
     @PostMapping
     public ResponseEntity<Tutor> crear(@Valid @RequestBody Tutor tutor) {
-        Tutor guardado = tutorRepository.save(tutor);
+        Tutor guardado = tutorService.crear(tutor);
         return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }
 
+    // PUT /api/tutores/{id}
     @PutMapping("/{id}")
     public ResponseEntity<Tutor> actualizar(@PathVariable Long id, @Valid @RequestBody Tutor datos) {
-        Tutor tutor = tutorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tutor no encontrado con id: " + id));
-        tutor.setEspecialidad(datos.getEspecialidad());
-        tutor.setDescripcion(datos.getDescripcion());
-        tutor.setDisponibilidad(datos.getDisponibilidad());
-        return ResponseEntity.ok(tutorRepository.save(tutor));
+        Tutor actualizado = tutorService.actualizar(id, datos);
+        return ResponseEntity.ok(actualizado);
     }
 
+    // DELETE /api/tutores/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        Tutor tutor = tutorRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tutor no encontrado con id: " + id));
-        tutorRepository.delete(tutor);
+        tutorService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 }
