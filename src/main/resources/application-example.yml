@@ -1,0 +1,13 @@
+# Copia este archivo como referencia local (application-local.yml, NO subir al repo)
+# o exporta estas variables de entorno antes de levantar la aplicacion.
+#
+# Ejemplo para ejecutar localmente contra tu instancia de AWS RDS:
+#
+#   export DB_HOST=tutorias-db.xxxxxxxxxx.us-east-1.rds.amazonaws.com
+#   export DB_PORT=3306
+#   export DB_NAME=tutorias_db
+#   export DB_USERNAME=admin
+#   export DB_PASSWORD=tu_password_segura
+#   export SERVER_PORT=8080
+#
+#   mvn spring-boot:run
