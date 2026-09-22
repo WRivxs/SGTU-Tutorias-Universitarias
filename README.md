@@ -124,3 +124,41 @@ La API quedará disponible en `http://localhost:8080`.
 
 ## Pruebas con Postman
 Importa la colección `postman/Tutorias-API.postman_collection.json` en Postman. La colección contiene carpetas organizadas para las 5 entidades con ejemplos de peticiones y variable `{{base_url}}` (`http://localhost:8080`).
+
+### Guía rápida de pruebas
+
+| Entidad | Operación | Endpoint | Ejemplo de cuerpo |
+|---|---|---|---|
+| Materias | POST | `/api/materias` | `{ "nombre": "Matemáticas", "estado": true }` |
+| Usuarios | POST | `/api/usuarios` | `{ "nombre": "Juan Pérez", "correo": "juan@example.com", "rol": "ESTUDIANTE", "estado": true }` |
+| Tutorías | POST | `/api/tutorias` | `{ "materiaId": 1, "tutorId": 2, "fecha": "2024-10-01T10:00:00", "estado": "DISPONIBLE" }` |
+| Solicitudes | POST | `/api/solicitudes` | `{ "estudianteId": 3, "tutoriaId": 5, "comentario": "Necesito ayuda" }` |
+
+Ejecuta la petición **GET** en `/api/tutorias` para listar las tutorías creadas y verifica que las respuestas tengan código `200`.
+
+## Script de ejecución local (run‑local)
+
+Se incluye el script `run-local.ps1` (ignorado por `.gitignore`) que simplifica la puesta en marcha del backend contra la instancia RDS.
+
+```powershell
+# Ejecutar desde la raíz del proyecto
+.\run-local.ps1
+```
+
+El script configura las variables de entorno necesarias y lanza `mvn spring-boot:run`.  
+> **Nota:** el script no se versiona para evitar exponer credenciales; cada desarrollador debe crear su propia copia con los valores de RDS.
+
+## Checklist de despliegue en AWS RDS
+
+1. **Crear la instancia MySQL** en AWS RDS (versión 8.x, tipo db.t3.micro, VPC y SG que permitan acceso desde tu IP).
+2. **Ejecutar el script DDL** `sql/ddl_tutorias.sql` contra la base de datos recién creada (con tu cliente favorito).
+3. **Configurar variables de entorno** con los valores de tu instancia (ver sección “Configuración de la base de datos”).
+4. **Iniciar la API** usando `run-local.ps1` o `mvn spring-boot:run`.
+5. **Verificar** que la aplicación responde en `http://localhost:8080/swagger-ui.html` o con Postman.
+6. **Push** de la rama `main` al repositorio remoto (`git push origin main`).
+
+## Solución de problemas comunes
+
+- **Error 1045 (Access denied)** – Verifica `DB_USERNAME` y `DB_PASSWORD`.
+- **Timeout al conectar con RDS** – Asegúrate que el SG permite tráfico inbound en el puerto 3306 desde tu IP.
+- **Port 8080 en uso** – Cambia `SERVER_PORT` en la variable de entorno o en `application.yml`.

@@ -35,3 +35,6 @@ build/
 application-local.yml
 application-local.properties
 *.pem
+run-local.ps1
+run-local.bat
+
