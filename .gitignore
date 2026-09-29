@@ -1,40 +1,55 @@
-HELP.md
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# ==========================================
+# Root .gitignore - SGTU Monorepo
+# ==========================================
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
+# IDE & Editor files
+.idea/
 *.iws
 *.iml
 *.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-
-### VS Code ###
 .vscode/
+.settings/
+.project
+.classpath
+.factorypath
+.apt_generated
+.springBeans
+.sts4-cache
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
 
-### Variables de entorno / credenciales ###
+# Environment & Credentials
 .env
+*.pem
+*.key
 application-local.yml
 application-local.properties
-*.pem
 run-local.ps1
 run-local.bat
 
+# ==========================================
+# Backend (Java / Maven / Spring Boot)
+# ==========================================
+backend/target/
+target/
+HELP.md
+!.mvn/wrapper/maven-wrapper.jar
+
+# ==========================================
+# Frontend (Angular / Node)
+# ==========================================
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
