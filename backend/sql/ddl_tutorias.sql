@@ -106,10 +106,14 @@ CREATE INDEX idx_usuarios_rol ON usuarios(rol);
 -- ---------------------------------------------------------------------
 -- Datos de prueba (opcional, para probar los endpoints en Postman)
 -- ---------------------------------------------------------------------
+-- Contraseñas de prueba:
+-- Admin:       Admin123*
+-- Wadid (Tutor): Tutor123*
+-- Eduardo (Estudiante): Estudiante123*
 INSERT INTO usuarios (nombre, apellido, correo, password, rol) VALUES
-('Admin', 'Sistema', 'admin@tutorias.com', '$2a$10$examplehash', 'ADMINISTRADOR'),
-('Wadid', 'Rivas', 'wadid.tutor@tutorias.com', '$2a$10$examplehash', 'TUTOR'),
-('Eduardo', 'Bettin', 'eduardo.estudiante@tutorias.com', '$2a$10$examplehash', 'ESTUDIANTE');
+('Admin', 'Sistema', 'admin@tutorias.com', '$2a$10$.GSS79c8LpcbugbFdmMwHup1LXTlHGxznUBvmQSQPBTciDnJmmo2a', 'ADMINISTRADOR'),
+('Wadid', 'Rivas', 'wadid.tutor@tutorias.com', '$2a$10$gZM5P9s8QtRg.7QAXMKm1.xBrhVdKKTgaaxdcr9RKAXFn1LJAc2cS', 'TUTOR'),
+('Eduardo', 'Bettin', 'eduardo.estudiante@tutorias.com', '$2a$10$PsgAsXHNb65OHM8ZyKbbbOaHzb.NqRGX3hek44obAN23E7mBAPM8.', 'ESTUDIANTE');
 
 INSERT INTO materias (nombre, descripcion) VALUES
 ('Bases de Datos', 'Modelado y administración de bases de datos relacionales'),

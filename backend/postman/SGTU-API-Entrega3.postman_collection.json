@@ -1,0 +1,832 @@
+{
+  "info": {
+    "name": "SGTU API - Entrega 3 (Seguridad + RBAC)",
+    "description": "Colección completa para pruebas de API del Sistema de Gestión de Tutorías Universitarias (SGTU). Incluye autenticación JWT, control de acceso RBAC para Administrador, Tutor y Estudiante, y más de 14 tests automatizados.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00. Autenticación (Login)",
+      "item": [
+        {
+          "name": "01. Login Administrador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Respuesta contiene token JWT\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"token\");",
+                  "    pm.expect(json.token).to.be.a(\"string\");",
+                  "    pm.expect(json.tipo).to.eql(\"Bearer\");",
+                  "    pm.environment.set(\"token_admin\", json.token);",
+                  "});",
+                  "",
+                  "pm.test(\"Rol devuelto es ADMINISTRADOR\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.rol).to.eql(\"ADMINISTRADOR\");",
+                  "});",
+                  "",
+                  "pm.test(\"Tiempo de respuesta < 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@tutorias.com\",\n  \"password\": \"Admin123*\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "02. Login Tutor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Respuesta contiene token JWT y rol TUTOR\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"token\");",
+                  "    pm.expect(json.rol).to.eql(\"TUTOR\");",
+                  "    pm.environment.set(\"token_tutor\", json.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"wadid.tutor@tutorias.com\",\n  \"password\": \"Tutor123*\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "03. Login Estudiante",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Respuesta contiene token JWT y rol ESTUDIANTE\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"token\");",
+                  "    pm.expect(json.rol).to.eql(\"ESTUDIANTE\");",
+                  "    pm.environment.set(\"token_estudiante\", json.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"eduardo.estudiante@tutorias.com\",\n  \"password\": \"Estudiante123*\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "04. Login Fallido (Credenciales Inválidas)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Estructura estándar de error de seguridad\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(401);",
+                  "    pm.expect(json.error).to.eql(\"Unauthorized\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@tutorias.com\",\n  \"password\": \"PasswordEquivocada123*\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01. Gestión de Usuarios (Exclusivo Admin)",
+      "item": [
+        {
+          "name": "01. Listar Usuarios (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Retorna lista de usuarios sin exponer contraseñas\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"array\");",
+                  "    if (json.length > 0) {",
+                  "        pm.expect(json[0]).to.not.have.property(\"password\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/usuarios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "usuarios"]
+            }
+          }
+        },
+        {
+          "name": "02. Crear Nuevo Usuario Tutor (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Usuario creado con rol TUTOR y contraseña protegida\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.rol).to.eql(\"TUTOR\");",
+                  "    pm.expect(json).to.not.have.property(\"password\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Jhon\",\n  \"apellido\": \"Bertel\",\n  \"correo\": \"jhon.tutor@tutorias.com\",\n  \"password\": \"Tutor123*\",\n  \"rol\": \"TUTOR\",\n  \"estado\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/usuarios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "usuarios"]
+            }
+          }
+        },
+        {
+          "name": "03. Crear Nuevo Estudiante (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Usuario estudiante creado con rol ESTUDIANTE\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.rol).to.eql(\"ESTUDIANTE\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Gomez\",\n  \"correo\": \"ana.estudiante@tutorias.com\",\n  \"password\": \"Estudiante123*\",\n  \"rol\": \"ESTUDIANTE\",\n  \"estado\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/usuarios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "usuarios"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Gestión de Materias",
+      "item": [
+        {
+          "name": "01. Listar Materias (Cualquier Rol)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Retorna catálogo de materias\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_estudiante}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/materias",
+              "host": ["{{base_url}}"],
+              "path": ["api", "materias"]
+            }
+          }
+        },
+        {
+          "name": "02. Crear Materia (Exclusivo Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Materia creada exitosamente\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"id\");",
+                  "    pm.expect(json.nombre).to.eql(\"Ingeniería de Software\");",
+                  "    pm.environment.set(\"materia_id\", json.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ingeniería de Software\",\n  \"descripcion\": \"Metodologías ágiles, diseño y calidad de software\",\n  \"estado\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/materias",
+              "host": ["{{base_url}}"],
+              "path": ["api", "materias"]
+            }
+          }
+        },
+        {
+          "name": "03. Obtener Materia por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Contiene nombre y estado de materia\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"nombre\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_tutor}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/materias/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "materias", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Gestión de Tutores",
+      "item": [
+        {
+          "name": "01. Listar Tutores",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Lista contiene tutores activos\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_estudiante}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tutores",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tutores"]
+            }
+          }
+        },
+        {
+          "name": "02. Obtener Tutor por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Perfil del tutor incluye especialidad\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"especialidad\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_estudiante}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tutores/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tutores", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Programación de Tutorías",
+      "item": [
+        {
+          "name": "01. Crear Tutoría Disponible (Tutor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Tutoría creada con estado DISPONIBLE\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.estado).to.eql(\"DISPONIBLE\");",
+                  "    pm.environment.set(\"tutoria_id\", json.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_tutor}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tutor\": { \"id\": 1 },\n  \"materia\": { \"id\": 1 },\n  \"fecha\": \"2026-10-20\",\n  \"hora\": \"14:00:00\",\n  \"modalidad\": \"VIRTUAL\",\n  \"lugar\": \"Google Meet\",\n  \"descripcion\": \"Repaso intensivo de consultas SQL avanzadas\",\n  \"estado\": \"DISPONIBLE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/tutorias",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tutorias"]
+            }
+          }
+        },
+        {
+          "name": "02. Listar Tutorías Disponibles (Estudiante)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Retorna lista de tutorías\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_estudiante}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tutorias?estado=DISPONIBLE",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tutorias"],
+              "query": [
+                { "key": "estado", "value": "DISPONIBLE" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Solicitudes de Tutoría",
+      "item": [
+        {
+          "name": "01. Crear Solicitud de Tutoría (Estudiante)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Solicitud creada en estado PENDIENTE\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.estado).to.eql(\"PENDIENTE\");",
+                  "    pm.environment.set(\"solicitud_id\", json.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_estudiante}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudiante\": { \"id\": 3 },\n  \"tutoria\": { \"id\": {{tutoria_id}} },\n  \"comentario\": \"Solicitud de apoyo en optimización de consultas SQL\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/solicitudes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "solicitudes"]
+            }
+          }
+        },
+        {
+          "name": "02. Listar Solicitudes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Retorna solicitudes registradas\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_tutor}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/solicitudes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "solicitudes"]
+            }
+          }
+        },
+        {
+          "name": "03. Responder Solicitud ACEPTADA (Tutor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Solicitud cambia a ACEPTADA\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.estado).to.eql(\"ACEPTADA\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_tutor}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/solicitudes/{{solicitud_id}}/responder?estado=ACEPTADA&comentario=Confirmada+por+el+tutor",
+              "host": ["{{base_url}}"],
+              "path": ["api", "solicitudes", "{{solicitud_id}}", "responder"],
+              "query": [
+                { "key": "estado", "value": "ACEPTADA" },
+                { "key": "comentario", "value": "Confirmada por el tutor" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Pruebas de Seguridad y Casos Negativos (RBAC)",
+      "item": [
+        {
+          "name": "01. Acceso sin Token (401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Respuesta JSON de error no autorizado\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(401);",
+                  "    pm.expect(json.error).to.eql(\"Unauthorized\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/usuarios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "usuarios"]
+            }
+          }
+        },
+        {
+          "name": "02. Estudiante intentando crear materia (403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "pm.test(\"Respuesta JSON de acceso denegado por rol\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(403);",
+                  "    pm.expect(json.error).to.eql(\"Forbidden\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_estudiante}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Materia No Autorizada\",\n  \"descripcion\": \"Intento de inserción sin rol admin\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/materias",
+              "host": ["{{base_url}}"],
+              "path": ["api", "materias"]
+            }
+          }
+        },
+        {
+          "name": "03. Estudiante intentando crear usuario (403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_estudiante}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Hacker\",\n  \"apellido\": \"Prueba\",\n  \"correo\": \"hacker@tutorias.com\",\n  \"password\": \"Clave123*\",\n  \"rol\": \"ADMINISTRADOR\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/usuarios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "usuarios"]
+            }
+          }
+        },
+        {
+          "name": "04. Validación 400 Bad Request por campos obligatorios",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Retorna mapa con detalle de errores de validación\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(400);",
+                  "    pm.expect(json).to.have.property(\"errores\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"correo-sin-formato-valido\",\n  \"password\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "05. Recurso No Encontrado (404 Not Found)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Mensaje legible de recurso no encontrado\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(404);",
+                  "    pm.expect(json.error).to.eql(\"Not Found\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/materias/999999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "materias", "999999"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

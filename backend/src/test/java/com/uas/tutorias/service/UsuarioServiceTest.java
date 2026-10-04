@@ -26,6 +26,9 @@ class UsuarioServiceTest {
     @Mock
     private UsuarioRepository usuarioRepository;
 
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UsuarioServiceImpl usuarioService;
 
@@ -79,6 +82,7 @@ class UsuarioServiceTest {
     @DisplayName("Debe crear un usuario exitosamente si el correo no existe")
     void crear_CorreoNoExiste_GuardaUsuario() {
         when(usuarioRepository.existsByCorreo(usuarioPrueba.getCorreo())).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn("claveEncriptada");
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioPrueba);
 
         Usuario resultado = usuarioService.crear(usuarioPrueba);

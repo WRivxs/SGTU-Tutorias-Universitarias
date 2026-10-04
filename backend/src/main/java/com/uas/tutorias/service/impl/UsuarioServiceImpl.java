@@ -6,6 +6,7 @@ import com.uas.tutorias.exception.ResourceNotFoundException;
 import com.uas.tutorias.repository.UsuarioRepository;
 import com.uas.tutorias.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import java.util.List;
 public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(readOnly = true)
@@ -43,6 +45,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {
             throw new ConflictException("Ya existe un usuario registrado con el correo: " + usuario.getCorreo());
         }
+        if (usuario.getPassword() != null && !usuario.getPassword().isBlank()) {
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }
         return usuarioRepository.save(usuario);
     }
 
@@ -59,7 +64,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setApellido(datos.getApellido());
         usuario.setCorreo(datos.getCorreo());
         if (datos.getPassword() != null && !datos.getPassword().isBlank()) {
-            usuario.setPassword(datos.getPassword());
+            usuario.setPassword(passwordEncoder.encode(datos.getPassword()));
         }
         if (datos.getRol() != null) {
             usuario.setRol(datos.getRol());
