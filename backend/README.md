@@ -1,8 +1,48 @@
-# Tutorías Backend — Entrega 3: Backend Completo + Seguridad + Postman
+﻿# Tutorías Backend — Entrega 3: Backend Completo + Seguridad + Postman
 
 Backend del **Sistema de Gestión de Tutorías Universitarias (SGTU)**, desarrollado con **Spring Boot 3**, **Spring Security 6**, **JJWT**, **Spring Data JPA** y base de datos MySQL en AWS RDS. Incluye autenticación con JWT, control de acceso por roles (RBAC), documentación interactiva con **Swagger OpenAPI 3** y colección de Postman con 17 tests automatizados.
 
 ---
+
+## 🚀 Guía de Inicio Rápido (Cómo Ejecutar el Proyecto)
+
+Para que cualquier desarrollador o evaluador pueda ejecutar el backend sin complicaciones, hemos automatizado la inyección de variables de entorno.
+
+### Prerrequisitos
+- **Java 17+**
+- **Maven**
+- **Puerto 8080 libre**
+
+### Pasos para levantar el servidor en Windows:
+
+1. Abre una terminal de PowerShell en la carpeta `backend/`.
+
+2. Ejecuta el script de arranque rápido:
+
+   `powershell
+   .\arrancar.ps1
+   ``n
+> **Nota:** Este script configura automáticamente las variables de conexión a AWS RDS y los secretos de cifrado para los tokens JWT, y luego ejecuta `mvn spring-boot:run`.
+
+
+### Si usas Linux/Mac (Bash)
+
+Exporta las variables antes de ejecutar Maven:
+
+`ash
+export DB_HOST=tu_host_aws_rds
+export DB_PORT=3306
+export DB_NAME=tutorias_db
+export DB_USERNAME=tu_usuario
+export DB_PASSWORD=tu_password
+export SERVER_PORT=8080
+export JWT_SECRET=SecretKey2026SecureHashKeyMustBeLongEnough
+export JWT_EXPIRATION=86400000
+
+mvn spring-boot:run
+``n
+---
+
 
 ## 👥 Integrantes del Equipo
 
