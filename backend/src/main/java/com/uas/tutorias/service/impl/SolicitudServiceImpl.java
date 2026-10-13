@@ -39,6 +39,12 @@ public class SolicitudServiceImpl implements SolicitudService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Solicitud> listarPorTutoria(Long tutoriaId) {
+        return solicitudRepository.findByTutoriaId(tutoriaId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Solicitud obtenerPorId(Long id) {
         return solicitudRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Solicitud no encontrada con id: " + id));
@@ -67,6 +73,10 @@ public class SolicitudServiceImpl implements SolicitudService {
 
         if (tutoria.getEstado() != Tutoria.Estado.DISPONIBLE) {
             throw new ConflictException("La tutoría no está disponible para solicitudes. Estado actual: " + tutoria.getEstado());
+        }
+
+        if (solicitudRepository.existsByEstudianteIdAndTutoriaId(estudianteId, tutoriaId)) {
+            throw new ConflictException("Ya has enviado una solicitud para esta tutoría.");
         }
 
         solicitud.setEstudiante(estudiante);
@@ -103,19 +113,9 @@ public class SolicitudServiceImpl implements SolicitudService {
         if (comentario != null) {
             solicitud.setComentario(comentario);
         }
-
-        Tutoria tutoria = solicitud.getTutoria();
-        if (tutoria != null) {
-            if (nuevoEstado == Solicitud.Estado.ACEPTADA) {
-                tutoria.setEstado(Tutoria.Estado.OCUPADA);
-                tutoriaRepository.save(tutoria);
-            } else if (nuevoEstado == Solicitud.Estado.CANCELADA || nuevoEstado == Solicitud.Estado.RECHAZADA) {
-                if (tutoria.getEstado() == Tutoria.Estado.OCUPADA) {
-                    tutoria.setEstado(Tutoria.Estado.DISPONIBLE);
-                    tutoriaRepository.save(tutoria);
-                }
-            }
-        }
+        // En un modelo de tutorías grupales, aceptar o rechazar a un estudiante
+        // confirma su asistencia individual sin bloquear ni cerrar la tutoría para los demás.
+        // El estado de la tutoría (DISPONIBLE/OCUPADA/FINALIZADA/CANCELADA) lo gestiona el tutor directamente.
     }
 
     @Override

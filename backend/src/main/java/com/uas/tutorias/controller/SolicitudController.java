@@ -21,13 +21,18 @@ public class SolicitudController {
 
     private final SolicitudService solicitudService;
 
-    // GET /api/solicitudes?estudianteId=1
-    @Operation(summary = "Listar solicitudes", description = "Disponible para todos los roles autenticados. Permite filtrar por estudianteId")
+    // GET /api/solicitudes?estudianteId=1&tutoriaId=2
+    @Operation(summary = "Listar solicitudes", description = "Disponible para todos los roles autenticados. Permite filtrar por estudianteId o tutoriaId")
     @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('TUTOR') or hasRole('ESTUDIANTE')")
     @GetMapping
-    public ResponseEntity<List<Solicitud>> listar(@RequestParam(required = false) Long estudianteId) {
+    public ResponseEntity<List<Solicitud>> listar(
+            @RequestParam(required = false) Long estudianteId,
+            @RequestParam(required = false) Long tutoriaId) {
         if (estudianteId != null) {
             return ResponseEntity.ok(solicitudService.listarPorEstudiante(estudianteId));
+        }
+        if (tutoriaId != null) {
+            return ResponseEntity.ok(solicitudService.listarPorTutoria(tutoriaId));
         }
         return ResponseEntity.ok(solicitudService.listarTodas());
     }

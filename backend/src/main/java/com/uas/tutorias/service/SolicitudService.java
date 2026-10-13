@@ -7,6 +7,7 @@ import java.util.List;
 public interface SolicitudService {
     List<Solicitud> listarTodas();
     List<Solicitud> listarPorEstudiante(Long estudianteId);
+    List<Solicitud> listarPorTutoria(Long tutoriaId);
     Solicitud obtenerPorId(Long id);
     Solicitud crear(Solicitud solicitud);
     Solicitud actualizar(Long id, Solicitud datos);

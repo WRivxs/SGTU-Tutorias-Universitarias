@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface SolicitudRepository extends JpaRepository<Solicitud, Long> {
     List<Solicitud> findByEstudianteId(Long estudianteId);
+    List<Solicitud> findByTutoriaId(Long tutoriaId);
+    boolean existsByEstudianteIdAndTutoriaId(Long estudianteId, Long tutoriaId);
 }

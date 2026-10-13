@@ -1,6 +1,7 @@
 package com.uas.tutorias.service.impl;
 
 import com.uas.tutorias.entity.Usuario;
+import com.uas.tutorias.exception.BadRequestException;
 import com.uas.tutorias.exception.ConflictException;
 import com.uas.tutorias.exception.ResourceNotFoundException;
 import com.uas.tutorias.repository.UsuarioRepository;
@@ -45,9 +46,10 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {
             throw new ConflictException("Ya existe un usuario registrado con el correo: " + usuario.getCorreo());
         }
-        if (usuario.getPassword() != null && !usuario.getPassword().isBlank()) {
-            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        if (usuario.getPassword() == null || usuario.getPassword().isBlank()) {
+            throw new BadRequestException("La contraseña es obligatoria para registrar un nuevo usuario");
         }
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         return usuarioRepository.save(usuario);
     }
 
