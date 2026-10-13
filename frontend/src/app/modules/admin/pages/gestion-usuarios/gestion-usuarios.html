@@ -1,0 +1,313 @@
+<div class="flex h-screen w-full overflow-hidden bg-gray-50">
+  <app-sidebar></app-sidebar>
+
+  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <app-navbar></app-navbar>
+
+    <main class="flex-1 overflow-y-auto p-6 space-y-6">
+
+      <!-- Alertas Feedback Visual -->
+      @if (mensajeExito()) {
+        <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-600 text-lg">check_circle</span>
+          <span>{{ mensajeExito() }}</span>
+        </div>
+      }
+
+      @if (mensajeError()) {
+        <div class="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined text-red-600 text-lg">error</span>
+          <span>{{ mensajeError() }}</span>
+        </div>
+      }
+
+      <!-- Encabezado de Sección -->
+      <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-xl font-bold text-[#051F20]">Gestión de Usuarios</h1>
+          <p class="text-xs text-gray-500 mt-0.5">
+            Administración centralizada de cuentas de estudiantes, docentes tutores y administradores.
+          </p>
+        </div>
+        <button (click)="abrirModalNuevo()"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-[#173831] hover:bg-[#235347] text-white text-xs font-semibold rounded-xl shadow-sm transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-base">person_add</span>
+          <span>+ Nuevo Usuario</span>
+        </button>
+      </div>
+
+      <!-- Barra de Filtros y Búsqueda -->
+      <div class="bg-white p-3.5 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center gap-3">
+        <!-- Input de búsqueda -->
+        <div class="relative flex-1 w-full">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
+          <input type="text" (input)="onBuscar($event)"
+                 placeholder="Buscar por nombre, apellido o correo..."
+                 class="w-full pl-9 pr-4 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347] focus:ring-1 focus:ring-[#8CB79B]" />
+        </div>
+
+        <!-- Filtro por Rol -->
+        <select (change)="onCambiarFiltroRol($event)"
+                class="w-full sm:w-44 px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-[#235347]">
+          <option value="TODOS">Todos los roles</option>
+          <option value="ADMINISTRADOR">Administradores</option>
+          <option value="TUTOR">Tutores</option>
+          <option value="ESTUDIANTE">Estudiantes</option>
+        </select>
+
+        <!-- Filtro por Estado -->
+        <select (change)="onCambiarFiltroEstado($event)"
+                class="w-full sm:w-36 px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-[#235347]">
+          <option value="TODOS">Todos los estados</option>
+          <option value="ACTIVOS">Solo Activos</option>
+          <option value="INACTIVOS">Solo Inactivos</option>
+        </select>
+      </div>
+
+      <!-- Tabla de Usuarios -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="bg-gray-50/70 border-b border-gray-100 text-gray-500 font-semibold uppercase tracking-wider text-[10px]">
+                <th class="py-3 px-4">Usuario</th>
+                <th class="py-3 px-4">Correo Institucional</th>
+                <th class="py-3 px-4">Rol / Especialidad</th>
+                <th class="py-3 px-4">Estado</th>
+                <th class="py-3 px-4 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              @if (cargando()) {
+                <tr>
+                  <td colspan="5" class="py-12 text-center text-gray-400">
+                    <div class="flex items-center justify-center gap-2">
+                      <span class="material-symbols-outlined animate-spin">progress_activity</span>
+                      <span>Cargando usuarios...</span>
+                    </div>
+                  </td>
+                </tr>
+              } @else if (usuariosFiltrados().length === 0) {
+                <tr>
+                  <td colspan="5" class="py-12 text-center text-gray-400">
+                    No se encontraron usuarios registrados con los filtros aplicados.
+                  </td>
+                </tr>
+              } @else {
+                @for (u of usuariosFiltrados(); track u.id) {
+                  <tr class="hover:bg-gray-50/50 transition-colors">
+                    <!-- Nombre y avatar -->
+                    <td class="py-2.5 px-4">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-full bg-[#DBF0DD] text-[#173831] font-bold flex items-center justify-center text-[11px]">
+                          {{ u.nombre.charAt(0) }}{{ u.apellido.charAt(0) }}
+                        </div>
+                        <div>
+                          <div class="font-bold text-[#051F20] text-xs">{{ u.nombre }} {{ u.apellido }}</div>
+                          <div class="text-[9px] text-gray-400">ID: #{{ u.id }}</div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Correo -->
+                    <td class="py-2.5 px-4 text-gray-600 font-mono text-[11px]">{{ u.correo }}</td>
+
+                    <!-- Rol y Especialidad (si es tutor) -->
+                    <td class="py-2.5 px-4">
+                      <div class="flex flex-col items-start gap-0.5">
+                        @if (u.rol === 'ADMINISTRADOR') {
+                          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#173831] text-white">ADMINISTRADOR</span>
+                        } @else if (u.rol === 'TUTOR') {
+                          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">TUTOR</span>
+                          @if (obtenerEspecialidadTutor(u.id)) {
+                            <span class="text-[10px] text-gray-500 font-semibold flex items-center gap-1">
+                              <span class="material-symbols-outlined text-[10px] text-emerald-600">school</span>
+                              {{ obtenerEspecialidadTutor(u.id) }}
+                            </span>
+                          }
+                        } @else {
+                          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-700">ESTUDIANTE</span>
+                        }
+                      </div>
+                    </td>
+
+                    <!-- Estado -->
+                    <td class="py-2.5 px-4">
+                      @if (u.estado) {
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Activo
+                        </span>
+                      } @else {
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-400">
+                          <span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span> Inactivo
+                        </span>
+                      }
+                    </td>
+
+                    <!-- Acciones -->
+                    <td class="py-2.5 px-4 text-right">
+                      <div class="inline-flex items-center gap-1">
+
+                        <!-- Toggle Estado -->
+                        <button (click)="toggleEstado(u)"
+                          title="{{ u.estado ? 'Desactivar usuario' : 'Activar usuario' }}"
+                          class="p-1 text-gray-400 hover:text-[#173831] hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
+                          <span class="material-symbols-outlined text-base">{{ u.estado ? 'toggle_on' : 'toggle_off' }}</span>
+                        </button>
+
+                        <!-- Editar -->
+                        <button (click)="abrirModalEditar(u)"
+                          title="Editar usuario"
+                          class="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer">
+                          <span class="material-symbols-outlined text-base">edit</span>
+                        </button>
+
+                        <!-- Eliminar -->
+                        <button (click)="eliminarUsuario(u)"
+                          title="Eliminar usuario"
+                          class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
+                          <span class="material-symbols-outlined text-base">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL DE CREAR / EDITAR USUARIO (COMPACTO)
+════════════════════════════════════════════════ -->
+@if (modalAbierto()) {
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+    <div class="bg-white rounded-2xl w-full max-w-md max-h-[88vh] flex flex-col shadow-2xl border border-gray-100 animate-in fade-in duration-150">
+
+      <!-- Modal Header (Fijo) -->
+      <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 flex-shrink-0">
+        <div>
+          <h2 class="text-sm font-bold text-[#051F20]">
+            {{ editandoId() ? 'Editar Usuario' : 'Nuevo Usuario' }}
+          </h2>
+          <p class="text-[11px] text-gray-500">Datos del usuario institucional.</p>
+        </div>
+        <button (click)="cerrarModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg cursor-pointer">
+          <span class="material-symbols-outlined text-base">close</span>
+        </button>
+      </div>
+
+      <!-- Formulario con Scroll Interno si es necesario -->
+      <form [formGroup]="form" (ngSubmit)="guardarUsuario()" class="flex-1 overflow-y-auto px-5 py-3 space-y-3">
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <!-- Nombre -->
+          <div class="space-y-0.5">
+            <label class="block text-[10px] font-bold text-[#051F20]">Nombre</label>
+            <input type="text" formControlName="nombre" placeholder="Juan"
+              class="w-full px-2.5 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#235347]" />
+            @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
+              <p class="text-[9px] text-red-500">Mínimo 2 letras.</p>
+            }
+          </div>
+
+          <!-- Apellido -->
+          <div class="space-y-0.5">
+            <label class="block text-[10px] font-bold text-[#051F20]">Apellido</label>
+            <input type="text" formControlName="apellido" placeholder="Pérez"
+              class="w-full px-2.5 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#235347]" />
+            @if (form.get('apellido')?.invalid && form.get('apellido')?.touched) {
+              <p class="text-[9px] text-red-500">Requerido.</p>
+            }
+          </div>
+        </div>
+
+        <!-- Correo -->
+        <div class="space-y-0.5">
+          <label class="block text-[10px] font-bold text-[#051F20]">Correo Institucional</label>
+          <input type="email" formControlName="correo" placeholder="usuario@tutorias.com"
+            class="w-full px-2.5 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#235347]" />
+          @if (form.get('correo')?.invalid && form.get('correo')?.touched) {
+            <p class="text-[9px] text-red-500">Correo institucional no válido.</p>
+          }
+        </div>
+
+        <!-- Contraseña -->
+        <div class="space-y-0.5">
+          <div class="flex items-center justify-between">
+            <label class="block text-[10px] font-bold text-[#051F20]">
+              {{ editandoId() ? 'Restablecer Contraseña (Opcional)' : 'Contraseña' }}
+            </label>
+            @if (editandoId()) {
+              <span class="text-[9px] text-gray-400">Dejar vacía para no cambiar</span>
+            }
+          </div>
+          <div class="relative">
+            <input [type]="mostrarPassword() ? 'text' : 'password'"
+                   formControlName="password"
+                   placeholder="{{ editandoId() ? '•••••••• (sin cambios)' : 'Mínimo 6 caracteres' }}"
+                   class="w-full pl-2.5 pr-8 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#235347]" />
+            <button type="button" (click)="toggleMostrarPassword()"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
+              <span class="material-symbols-outlined text-sm">
+                {{ mostrarPassword() ? 'visibility_off' : 'visibility' }}
+              </span>
+            </button>
+          </div>
+          @if (form.get('password')?.invalid && form.get('password')?.touched) {
+            <p class="text-[9px] text-red-500">Mínimo 6 caracteres.</p>
+          }
+        </div>
+
+        <!-- Rol -->
+        <div class="space-y-0.5">
+          <label class="block text-[10px] font-bold text-[#051F20]">Rol</label>
+          <select formControlName="rol"
+            class="w-full px-2.5 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#235347]">
+            <option value="ESTUDIANTE">Estudiante</option>
+            <option value="TUTOR">Tutor Académico</option>
+            <option value="ADMINISTRADOR">Administrador</option>
+          </select>
+        </div>
+
+        <!-- Campo Especialidad (Condicional solo si es TUTOR) -->
+        @if (form.get('rol')?.value === 'TUTOR') {
+          <div class="p-2.5 bg-[#DBF0DD]/30 border border-[#8CB79B]/40 rounded-xl space-y-1">
+            <div class="flex items-center gap-1 text-[11px] font-bold text-[#173831]">
+              <span class="material-symbols-outlined text-xs">school</span>
+              <span>Alta de Tutor</span>
+            </div>
+            <label class="block text-[10px] font-bold text-[#051F20]">Especialidad / Área</label>
+            <input type="text" formControlName="especialidad" placeholder="Ej. Cálculo, Programación..."
+              class="w-full px-2.5 py-1 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#235347]" />
+          </div>
+        }
+
+        <!-- Estado Checkbox -->
+        <div class="pt-1 flex items-center gap-2">
+          <input type="checkbox" id="user-activo" formControlName="estado"
+                 class="w-3.5 h-3.5 rounded border-gray-300 accent-[#173831] cursor-pointer" />
+          <label for="user-activo" class="text-xs text-gray-700 cursor-pointer font-semibold">Cuenta activa</label>
+        </div>
+
+        <!-- Botones Modal (Footer Fijo) -->
+        <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+          <button type="button" (click)="cerrarModal()"
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer">
+            Cancelar
+          </button>
+          <button type="submit"
+            class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#173831] hover:bg-[#235347] text-white shadow-sm transition-colors cursor-pointer">
+            {{ editandoId() ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}

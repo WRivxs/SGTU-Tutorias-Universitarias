@@ -1,0 +1,244 @@
+<div class="flex h-screen w-full overflow-hidden bg-gray-50">
+  <app-sidebar></app-sidebar>
+
+  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <app-navbar></app-navbar>
+
+    <main class="flex-1 overflow-y-auto p-6 space-y-6">
+
+      <!-- Header del Calendario -->
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="px-2.5 py-0.5 rounded-full bg-[#DBF0DD] text-[#173831] text-[10px] font-bold uppercase tracking-wider">
+              Supervisión de Turnos
+            </span>
+            <span class="text-xs text-gray-400">•</span>
+            <span class="text-xs text-gray-500">
+              Total: <strong>{{ tutorias().length }}</strong> tutorías registradas
+            </span>
+          </div>
+          <h1 class="text-xl font-bold text-[#051F20]">Calendario Institucional de Tutorías</h1>
+          <p class="text-xs text-gray-500 mt-0.5">
+            Vista cronológica interactiva para consultar y auditar sesiones académicas por fecha.
+          </p>
+        </div>
+
+        <!-- Controles de Navegación de Mes -->
+        <div class="flex items-center gap-2">
+          <button (click)="irAHoy()"
+            class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer">
+            Hoy
+          </button>
+          <div class="flex items-center bg-gray-100 rounded-xl p-0.5">
+            <button (click)="mesAnterior()" title="Mes anterior"
+              class="p-1.5 text-gray-600 hover:text-[#051F20] hover:bg-white rounded-lg transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-base">chevron_left</span>
+            </button>
+            <span class="px-3 text-xs font-bold text-[#051F20] min-w-[130px] text-center">
+              {{ mesAnioTexto() }}
+            </span>
+            <button (click)="mesSiguiente()" title="Mes siguiente"
+              class="p-1.5 text-gray-600 hover:text-[#051F20] hover:bg-white rounded-lg transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-base">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layout de Calendario: Cuadrícula (Izquierda) + Panel de Detalle (Derecha) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- ═══════════════════════════════════════════════
+             COLUMNA IZQUIERDA: Cuadrícula del Calendario (7 cols)
+        ════════════════════════════════════════════════ -->
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+
+          <!-- Cabecera de Días de la Semana -->
+          <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] text-gray-400 uppercase tracking-wider pb-2 border-b border-gray-100">
+            @for (diaNom of diasSemana; track diaNom) {
+              <div>{{ diaNom }}</div>
+            }
+          </div>
+
+          <!-- Cuadrícula de Días -->
+          @if (cargando()) {
+            <div class="py-24 text-center text-gray-400 text-xs flex flex-col items-center gap-2">
+              <span class="material-symbols-outlined animate-spin text-2xl text-[#173831]">progress_activity</span>
+              <span>Cargando calendario y sesiones...</span>
+            </div>
+          } @else {
+            <div class="grid grid-cols-7 gap-1.5">
+              @for (dia of diasCuadricula(); track dia.fechaStr) {
+                <div
+                  (click)="seleccionarDia(dia)"
+                  [class]="'min-h-[72px] sm:min-h-[82px] p-2 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ' +
+                    (diaSeleccionado()?.fechaStr === dia.fechaStr
+                      ? 'border-[#173831] bg-[#DBF0DD]/20 ring-2 ring-[#173831]/20 shadow-sm '
+                      : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50/70 ') +
+                    (!dia.esMesActual ? 'opacity-40 bg-gray-50/40 ' : 'bg-white ')">
+
+                  <!-- Número de Día -->
+                  <div class="flex items-center justify-between">
+                    <span [class]="'text-xs font-bold ' +
+                      (dia.esHoy ? 'w-6 h-6 rounded-full bg-[#173831] text-white flex items-center justify-center ' :
+                       dia.esMesActual ? 'text-gray-700 ' : 'text-gray-400 ')">
+                      {{ dia.diaNumero }}
+                    </span>
+
+                    @if (dia.tutorias.length > 0) {
+                      <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    }
+                  </div>
+
+                  <!-- Mini Badges de Tutorías del Día -->
+                  <div class="space-y-1 mt-1">
+                    @if (dia.tutorias.length > 0) {
+                      <div class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#DBF0DD] text-[#173831] truncate flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[10px]">school</span>
+                        <span>{{ dia.tutorias.length }} {{ dia.tutorias.length === 1 ? 'sesión' : 'sesiones' }}</span>
+                      </div>
+                    }
+                  </div>
+
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Leyenda de Estados -->
+          <div class="pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3 text-[10px] text-gray-500">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span>Días con tutorías</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded-full bg-[#173831] text-white flex items-center justify-center text-[10px] font-bold">#</span>
+              <span>Día actual</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-4 h-4 rounded border-2 border-[#173831] bg-[#DBF0DD]/20"></span>
+              <span>Día seleccionado</span>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- ═══════════════════════════════════════════════
+             COLUMNA DERECHA: Detalle del Día Seleccionado (5 cols)
+        ════════════════════════════════════════════════ -->
+        <div class="lg:col-span-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4 sticky top-6">
+
+          <!-- Encabezado de la fecha seleccionada -->
+          <div class="pb-3 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                Detalle del Día
+              </span>
+              <h2 class="text-base font-bold text-[#051F20] mt-0.5">
+                {{ diaSeleccionado()?.fechaStr || 'Selecciona un día' }}
+              </h2>
+            </div>
+            <span class="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg">
+              {{ tutoriasDiaSeleccionado().length }} {{ tutoriasDiaSeleccionado().length === 1 ? 'Tutoría' : 'Tutorías' }}
+            </span>
+          </div>
+
+          <!-- Listado de Tutorías del Día Seleccionado -->
+          @if (tutoriasDiaSeleccionado().length === 0) {
+            <div class="py-16 text-center text-gray-400 text-xs space-y-2">
+              <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto text-gray-300">
+                <span class="material-symbols-outlined text-2xl">event_busy</span>
+              </div>
+              <p class="font-semibold text-gray-500">No hay tutorías programadas este día.</p>
+              <p class="text-[11px] text-gray-400">Haz clic en otro día del calendario para revisar turnos.</p>
+            </div>
+          } @else {
+            <div class="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+              @for (t of tutoriasDiaSeleccionado(); track t.id) {
+                <div class="p-4 rounded-xl border border-gray-100 hover:border-[#8CB79B] bg-gray-50/40 hover:bg-[#DBF0DD]/10 transition-all space-y-2.5">
+
+                  <!-- Header de la sesión (Materia + Estado) -->
+                  <div class="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 class="text-xs font-bold text-[#051F20]">
+                        {{ t.materia?.nombre || 'Materia no especificada' }}
+                      </h3>
+                      <span class="text-[10px] text-gray-400 font-mono">ID Sesión: #{{ t.id }}</span>
+                    </div>
+
+                    <!-- Badge de Estado -->
+                    @if (t.estado === 'DISPONIBLE') {
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">
+                        DISPONIBLE
+                      </span>
+                    } @else if (t.estado === 'OCUPADA') {
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-100 text-blue-800">
+                        OCUPADA
+                      </span>
+                    } @else if (t.estado === 'FINALIZADA') {
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 text-gray-700">
+                        FINALIZADA
+                      </span>
+                    } @else {
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-800">
+                        CANCELADA
+                      </span>
+                    }
+                  </div>
+
+                  <!-- Datos del Tutor -->
+                  <div class="flex items-center gap-2 text-xs text-gray-700">
+                    <span class="material-symbols-outlined text-sm text-[#173831]">person</span>
+                    <span>
+                      Tutor: <strong>
+                        {{ t.tutor?.usuario?.nombre || 'Docente' }} {{ t.tutor?.usuario?.apellido || '' }}
+                      </strong>
+                    </span>
+                  </div>
+
+                  <!-- Hora y Modalidad -->
+                  <div class="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-gray-100 text-gray-600">
+                    <div class="flex items-center gap-1">
+                      <span class="material-symbols-outlined text-xs text-gray-400">schedule</span>
+                      <span>{{ t.hora }}</span>
+                    </div>
+
+                    <div class="flex items-center gap-1">
+                      @if (t.modalidad === 'VIRTUAL') {
+                        <span class="material-symbols-outlined text-xs text-blue-500">videocam</span>
+                        <span class="text-blue-700 font-semibold">Virtual</span>
+                      } @else {
+                        <span class="material-symbols-outlined text-xs text-emerald-600">meeting_room</span>
+                        <span class="text-emerald-700 font-semibold">Presencial</span>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Lugar o Enlace -->
+                  @if (t.lugar) {
+                    <div class="p-2 rounded-lg bg-white border border-gray-100 text-[10px] text-gray-600 flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-xs text-gray-400">place</span>
+                      <span class="truncate">{{ t.lugar }}</span>
+                    </div>
+                  }
+
+                  <!-- Descripción -->
+                  @if (t.descripcion) {
+                    <p class="text-[10px] text-gray-500 italic">
+                      "{{ t.descripcion }}"
+                    </p>
+                  }
+
+                </div>
+              }
+            </div>
+          }
+
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</div>
