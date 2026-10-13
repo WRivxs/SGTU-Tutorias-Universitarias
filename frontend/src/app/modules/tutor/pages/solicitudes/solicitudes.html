@@ -1,0 +1,231 @@
+<div class="flex h-screen w-full overflow-hidden bg-gray-50">
+  <app-sidebar-tutor></app-sidebar-tutor>
+
+  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <app-navbar></app-navbar>
+
+    <main class="flex-1 overflow-y-auto p-6 space-y-6">
+
+      <!-- Feedback Visual -->
+      @if (mensajeExito()) {
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-600 text-lg">check_circle</span>
+          <span>{{ mensajeExito() }}</span>
+        </div>
+      }
+
+      @if (mensajeError()) {
+        <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined text-red-600 text-lg">error</span>
+          <span>{{ mensajeError() }}</span>
+        </div>
+      }
+
+      <!-- Encabezado de Solicitudes -->
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 text-[10px] font-bold uppercase tracking-wider">
+              Bandeja de Entrada
+            </span>
+            <span class="text-xs text-gray-400">•</span>
+            <span class="text-xs font-semibold text-[#173831]">
+              <strong>{{ totalPendientes() }}</strong> pendientes de respuesta
+            </span>
+          </div>
+          <h1 class="text-xl font-bold text-[#051F20]">Solicitudes de Tutoría</h1>
+          <p class="text-xs text-gray-500 mt-0.5">
+            Estudiantes que han reservado o solicitado cupo en tus sesiones académicas.
+          </p>
+        </div>
+      </div>
+
+      <!-- Filtros Rápidos -->
+      <div class="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-2 overflow-x-auto">
+        <button (click)="cambiarFiltro('TODAS')"
+          [class]="'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ' +
+            (filtroEstado() === 'TODAS' ? 'bg-[#173831] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100')">
+          Todas ({{ solicitudes().length }})
+        </button>
+        <button (click)="cambiarFiltro('PENDIENTE')"
+          [class]="'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ' +
+            (filtroEstado() === 'PENDIENTE' ? 'bg-amber-600 text-white shadow-sm' : 'text-amber-800 hover:bg-amber-50')">
+          Pendientes ({{ totalPendientes() }})
+        </button>
+        <button (click)="cambiarFiltro('ACEPTADA')"
+          [class]="'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ' +
+            (filtroEstado() === 'ACEPTADA' ? 'bg-emerald-600 text-white shadow-sm' : 'text-emerald-700 hover:bg-emerald-50')">
+          Aceptadas
+        </button>
+        <button (click)="cambiarFiltro('RECHAZADA')"
+          [class]="'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ' +
+            (filtroEstado() === 'RECHAZADA' ? 'bg-red-600 text-white shadow-sm' : 'text-red-700 hover:bg-red-50')">
+          Rechazadas
+        </button>
+      </div>
+
+      <!-- Tabla de Solicitudes -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="bg-gray-50/70 border-b border-gray-100 text-gray-500 font-semibold uppercase tracking-wider text-[10px]">
+                <th class="py-3 px-4">Estudiante Solicitante</th>
+                <th class="py-3 px-4">Sesión Solicitada</th>
+                <th class="py-3 px-4">Fecha de Solicitud</th>
+                <th class="py-3 px-4">Estado</th>
+                <th class="py-3 px-4 text-right">Decisión del Tutor</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              @if (cargando()) {
+                <tr>
+                  <td colspan="5" class="py-12 text-center text-gray-400">
+                    <div class="flex items-center justify-center gap-2">
+                      <span class="material-symbols-outlined animate-spin">progress_activity</span>
+                      <span>Cargando solicitudes...</span>
+                    </div>
+                  </td>
+                </tr>
+              } @else if (solicitudesFiltradas().length === 0) {
+                <tr>
+                  <td colspan="5" class="py-12 text-center text-gray-400">
+                    No hay solicitudes con el estado seleccionado.
+                  </td>
+                </tr>
+              } @else {
+                @for (s of solicitudesFiltradas(); track s.id) {
+                  <tr class="hover:bg-gray-50/50 transition-colors">
+
+                    <!-- Estudiante -->
+                    <td class="py-3 px-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-bold flex items-center justify-center text-xs">
+                          {{ s.estudiante?.nombre ? s.estudiante!.nombre.charAt(0) : 'E' }}
+                        </div>
+                        <div>
+                          <div class="font-bold text-[#051F20]">
+                            {{ s.estudiante?.nombre || 'Estudiante' }} {{ s.estudiante?.apellido || '' }}
+                          </div>
+                          <div class="text-[10px] text-gray-400 font-mono">{{ s.estudiante?.correo }}</div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Sesión (Materia + Fecha) -->
+                    <td class="py-3 px-4">
+                      <div class="font-semibold text-[#051F20]">
+                        {{ s.tutoria?.materia?.nombre || 'Tutoría Programada' }}
+                      </div>
+                      <div class="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
+                        <span class="material-symbols-outlined text-xs text-gray-400">event</span>
+                        <span>{{ s.tutoria?.fecha }} · {{ s.tutoria?.hora }}</span>
+                      </div>
+                    </td>
+
+                    <!-- Fecha de Solicitud y Comentario -->
+                    <td class="py-3 px-4">
+                      <div class="text-gray-600 font-mono text-[11px]">
+                        {{ s.fechaSolicitud ? (s.fechaSolicitud | date:'short') : 'Reciente' }}
+                      </div>
+                      @if (s.comentario) {
+                        <div class="text-[10px] text-gray-500 italic mt-0.5 max-w-xs truncate">
+                          Nota: "{{ s.comentario }}"
+                        </div>
+                      }
+                    </td>
+
+                    <!-- Badge Estado -->
+                    <td class="py-3 px-4">
+                      @if (s.estado === 'PENDIENTE') {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                          PENDIENTE
+                        </span>
+                      } @else if (s.estado === 'ACEPTADA') {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                          ACEPTADA
+                        </span>
+                      } @else if (s.estado === 'RECHAZADA') {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800">
+                          RECHAZADA
+                        </span>
+                      } @else {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">
+                          CANCELADA
+                        </span>
+                      }
+                    </td>
+
+                    <!-- Acciones / Decisión -->
+                    <td class="py-3 px-4 text-right">
+                      @if (s.estado === 'PENDIENTE') {
+                        <div class="inline-flex items-center gap-2">
+                          <button (click)="aceptarSolicitud(s)"
+                            title="Aceptar solicitud"
+                            class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-[11px] shadow-sm transition-colors cursor-pointer flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">check</span>
+                            <span>Aceptar</span>
+                          </button>
+
+                          <button (click)="abrirModalRechazar(s)"
+                            title="Rechazar solicitud"
+                            class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg font-semibold text-[11px] transition-colors cursor-pointer flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                            <span>Rechazar</span>
+                          </button>
+                        </div>
+                      } @else {
+                        <span class="text-[11px] text-gray-400 italic">Resuelta</span>
+                      }
+                    </td>
+
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Modal Rechazar Solicitud -->
+@if (modalRechazoAbierto()) {
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-gray-100 animate-in fade-in duration-200">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <h2 class="text-base font-bold text-[#051F20]">Rechazar Solicitud</h2>
+        <button (click)="cerrarModalRechazo()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-4 pt-4">
+        <p class="text-xs text-gray-600">
+          ¿Deseas rechazar la solicitud de <strong>{{ solicitudARechazar()?.estudiante?.nombre }}</strong>?
+          Puedes incluir un motivo para que el estudiante esté informado.
+        </p>
+
+        <div class="space-y-1">
+          <label class="block text-[11px] font-bold text-[#051F20]">Motivo / Comentario</label>
+          <textarea [ngModel]="motivoRechazo()" (ngModelChange)="motivoRechazo.set($event)"
+            rows="3" placeholder="Ej. El cupo del salón está lleno, favor solicitar la sesión de la próxima semana..."
+            class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347]"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+          <button type="button" (click)="cerrarModalRechazo()"
+            class="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer">
+            Cancelar
+          </button>
+          <button type="button" (click)="confirmarRechazo()"
+            class="px-5 py-2 rounded-xl text-xs font-semibold bg-red-600 hover:bg-red-700 text-white shadow-sm transition-colors cursor-pointer">
+            Confirmar Rechazo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

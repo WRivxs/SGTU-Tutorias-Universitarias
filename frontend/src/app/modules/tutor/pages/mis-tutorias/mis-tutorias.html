@@ -1,0 +1,464 @@
+<div class="flex h-screen w-full overflow-hidden bg-gray-50">
+  <app-sidebar-tutor></app-sidebar-tutor>
+
+  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <app-navbar></app-navbar>
+
+    <main class="flex-1 overflow-y-auto p-6 space-y-6">
+
+      <!-- Alertas de Feedback -->
+      @if (mensajeExito()) {
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-600 text-lg">check_circle</span>
+          <span>{{ mensajeExito() }}</span>
+        </div>
+      }
+
+      @if (mensajeError()) {
+        <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined text-red-600 text-lg">error</span>
+          <span>{{ mensajeError() }}</span>
+        </div>
+      }
+
+      <!-- Encabezado de la Sección -->
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="px-2.5 py-0.5 rounded-full bg-[#DBF0DD] text-[#173831] text-[10px] font-bold uppercase tracking-wider">
+              Docente / Tutor
+            </span>
+            <span class="text-xs text-gray-400">•</span>
+            <span class="text-xs text-gray-500 font-semibold">
+              {{ tutorias().length }} sesiones registradas
+            </span>
+          </div>
+          <h1 class="text-xl font-bold text-[#051F20]">Mis Tutorías Programadas</h1>
+          <p class="text-xs text-gray-500 mt-0.5">
+            Publica tus horarios de atención y supervisa las sesiones académicas con tus estudiantes.
+          </p>
+        </div>
+
+        <button (click)="abrirModalNuevo()"
+          class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#173831] hover:bg-[#235347] text-white text-xs font-semibold rounded-xl shadow-sm transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-base">add_circle</span>
+          <span>+ Publicar Nueva Tutoría</span>
+        </button>
+      </div>
+
+      <!-- Barra de Filtros por Estado -->
+      <div class="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-2 overflow-x-auto">
+        <button (click)="cambiarFiltro('TODOS')"
+          [class]="'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ' +
+            (filtroEstado() === 'TODOS' ? 'bg-[#173831] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100')">
+          Todas ({{ tutorias().length }})
+        </button>
+        <button (click)="cambiarFiltro('DISPONIBLE')"
+          [class]="'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ' +
+            (filtroEstado() === 'DISPONIBLE' ? 'bg-emerald-600 text-white shadow-sm' : 'text-emerald-700 hover:bg-emerald-50')">
+          Disponibles
+        </button>
+        <button (click)="cambiarFiltro('OCUPADA')"
+          [class]="'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ' +
+            (filtroEstado() === 'OCUPADA' ? 'bg-blue-600 text-white shadow-sm' : 'text-blue-700 hover:bg-blue-50')">
+          Ocupadas
+        </button>
+        <button (click)="cambiarFiltro('FINALIZADA')"
+          [class]="'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ' +
+            (filtroEstado() === 'FINALIZADA' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100')">
+          Finalizadas
+        </button>
+        <button (click)="cambiarFiltro('CANCELADA')"
+          [class]="'px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ' +
+            (filtroEstado() === 'CANCELADA' ? 'bg-red-600 text-white shadow-sm' : 'text-red-700 hover:bg-red-50')">
+          Canceladas
+        </button>
+      </div>
+
+      <!-- Listado en Tabla/Tarjetas -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="bg-gray-50/70 border-b border-gray-100 text-gray-500 font-semibold uppercase tracking-wider text-[10px]">
+                <th class="py-3 px-4">Materia</th>
+                <th class="py-3 px-4">Fecha y Hora</th>
+                <th class="py-3 px-4">Modalidad & Lugar</th>
+                <th class="py-3 px-4">Estudiantes Inscritos</th>
+                <th class="py-3 px-4">Estado</th>
+                <th class="py-3 px-4 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              @if (cargando()) {
+                <tr>
+                  <td colspan="6" class="py-12 text-center text-gray-400">
+                    <div class="flex items-center justify-center gap-2">
+                      <span class="material-symbols-outlined animate-spin">progress_activity</span>
+                      <span>Cargando sesiones...</span>
+                    </div>
+                  </td>
+                </tr>
+              } @else if (tutoriasFiltradas().length === 0) {
+                <tr>
+                  <td colspan="6" class="py-12 text-center text-gray-400">
+                    No tienes tutorías con el filtro seleccionado. ¡Publica una nueva sesión arriba!
+                  </td>
+                </tr>
+              } @else {
+                @for (t of tutoriasFiltradas(); track t.id) {
+                  <tr class="hover:bg-gray-50/50 transition-colors">
+                    <!-- Materia -->
+                    <td class="py-3 px-4">
+                      <div class="font-bold text-[#051F20]">{{ t.materia?.nombre || 'Sin Asignatura' }}</div>
+                      @if (t.descripcion) {
+                        <div class="text-[10px] text-gray-400 italic max-w-xs truncate">{{ t.descripcion }}</div>
+                      }
+                    </td>
+
+                    <!-- Fecha y Hora -->
+                    <td class="py-3 px-4">
+                      <div class="font-semibold text-gray-800 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-sm text-gray-400">calendar_month</span>
+                        <span>{{ t.fecha }}</span>
+                      </div>
+                      <div class="text-[11px] text-gray-500 flex items-center gap-1.5 mt-0.5">
+                        <span class="material-symbols-outlined text-xs text-gray-400">schedule</span>
+                        <span>{{ t.hora }}</span>
+                      </div>
+                    </td>
+
+                    <!-- Modalidad & Lugar -->
+                    <td class="py-3 px-4">
+                      <div class="flex items-center gap-1.5 mb-0.5">
+                        @if (t.modalidad === 'VIRTUAL') {
+                          <span class="material-symbols-outlined text-xs text-blue-500">videocam</span>
+                          <span class="text-blue-700 font-semibold text-[11px]">Virtual</span>
+                        } @else {
+                          <span class="material-symbols-outlined text-xs text-emerald-600">meeting_room</span>
+                          <span class="text-emerald-700 font-semibold text-[11px]">Presencial</span>
+                        }
+                      </div>
+                      <div class="text-[10px] text-gray-500 font-mono truncate max-w-xs">
+                        {{ t.lugar || 'Por definir' }}
+                      </div>
+                    </td>
+
+                    <!-- Estudiantes Inscritos (Contador y Botón) -->
+                    <td class="py-3 px-4">
+                      <button (click)="abrirModalEstudiantes(t)"
+                        class="group flex flex-col items-start gap-1 p-1.5 -ml-1.5 rounded-xl hover:bg-[#DBF0DD]/30 transition-colors cursor-pointer text-left">
+                        <div class="inline-flex items-center gap-1.5">
+                          <span class="material-symbols-outlined text-sm text-[#173831] group-hover:scale-110 transition-transform">groups</span>
+                          <span class="font-bold text-xs text-[#173831]">
+                            {{ obtenerInscritos(t.id).length }} {{ obtenerInscritos(t.id).length === 1 ? 'estudiante' : 'estudiantes' }}
+                          </span>
+                        </div>
+                        @if (obtenerPendientes(t.id).length > 0) {
+                          <span class="inline-flex items-center gap-1 text-[9px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                            {{ obtenerPendientes(t.id).length }} pendiente(s)
+                          </span>
+                        }
+                      </button>
+                    </td>
+
+                    <!-- Estado -->
+                    <td class="py-3 px-4">
+                      @if (t.estado === 'DISPONIBLE') {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                          DISPONIBLE
+                        </span>
+                      } @else if (t.estado === 'OCUPADA') {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                          OCUPADA
+                        </span>
+                      } @else if (t.estado === 'FINALIZADA') {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">
+                          FINALIZADA
+                        </span>
+                      } @else {
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800">
+                          CANCELADA
+                        </span>
+                      }
+                    </td>
+
+                    <!-- Acciones -->
+                    <td class="py-3 px-4 text-right">
+                      <div class="inline-flex items-center gap-1">
+                        <!-- Marcar como Finalizada (si estaba ocupada) -->
+                        @if (t.estado === 'OCUPADA') {
+                          <button (click)="cambiarEstado(t, 'FINALIZADA')"
+                            title="Completar sesión"
+                            class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer">
+                            <span class="material-symbols-outlined text-lg">check_circle</span>
+                          </button>
+                        }
+
+                        <!-- Marcar como Disponible de nuevo -->
+                        @if (t.estado === 'CANCELADA') {
+                          <button (click)="cambiarEstado(t, 'DISPONIBLE')"
+                            title="Reactivar tutoría"
+                            class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer">
+                            <span class="material-symbols-outlined text-lg">replay</span>
+                          </button>
+                        }
+
+                        <!-- Cancelar -->
+                        @if (t.estado === 'DISPONIBLE' || t.estado === 'OCUPADA') {
+                          <button (click)="cambiarEstado(t, 'CANCELADA')"
+                            title="Cancelar tutoría"
+                            class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer">
+                            <span class="material-symbols-outlined text-lg">cancel</span>
+                          </button>
+                        }
+
+                        <!-- Editar -->
+                        <button (click)="abrirModalEditar(t)"
+                          title="Editar sesión"
+                          class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer">
+                          <span class="material-symbols-outlined text-lg">edit</span>
+                        </button>
+
+                        <!-- Eliminar -->
+                        <button (click)="eliminarTutoria(t)"
+                          title="Eliminar registro"
+                          class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
+                          <span class="material-symbols-outlined text-lg">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL PUBLICAR / EDITAR TUTORÍA
+════════════════════════════════════════════════ -->
+@if (modalAbierto()) {
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl border border-gray-100 animate-in fade-in duration-200">
+
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div>
+          <h2 class="text-lg font-bold text-[#051F20]">
+            {{ editandoId() ? 'Editar Sesión de Tutoría' : 'Publicar Nueva Tutoría' }}
+          </h2>
+          <p class="text-xs text-gray-500">Define los detalles del turno de asesoría para los estudiantes.</p>
+        </div>
+        <button (click)="cerrarModal()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="guardarTutoria()" class="space-y-4 pt-4">
+
+        <!-- Seleccionar Materia -->
+        <div class="space-y-1">
+          <label class="block text-[11px] font-bold text-[#051F20]">Materia a Impartir</label>
+          <select formControlName="materiaId"
+            class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347]">
+            <option value="" disabled>Selecciona una asignatura del catálogo...</option>
+            @for (m of materias(); track m.id) {
+              <option [value]="m.id">{{ m.nombre }}</option>
+            }
+          </select>
+          @if (form.get('materiaId')?.invalid && form.get('materiaId')?.touched) {
+            <p class="text-[10px] text-red-500">Debes seleccionar una materia.</p>
+          }
+        </div>
+
+        <!-- Fecha y Hora -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="block text-[11px] font-bold text-[#051F20]">Fecha</label>
+            <input type="date" formControlName="fecha"
+              class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347]" />
+            @if (form.get('fecha')?.invalid && form.get('fecha')?.touched) {
+              <p class="text-[10px] text-red-500">La fecha es obligatoria.</p>
+            }
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-[11px] font-bold text-[#051F20]">Hora de Inicio</label>
+            <input type="time" formControlName="hora"
+              class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347]" />
+            @if (form.get('hora')?.invalid && form.get('hora')?.touched) {
+              <p class="text-[10px] text-red-500">La hora es obligatoria.</p>
+            }
+          </div>
+        </div>
+
+        <!-- Modalidad y Lugar -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="block text-[11px] font-bold text-[#051F20]">Modalidad</label>
+            <select formControlName="modalidad"
+              class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347]">
+              <option value="PRESENCIAL">Presencial (En Campus)</option>
+              <option value="VIRTUAL">Virtual (En Línea)</option>
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-[11px] font-bold text-[#051F20]">
+              {{ form.get('modalidad')?.value === 'VIRTUAL' ? 'Enlace (Meet/Teams)' : 'Salón o Aula' }}
+            </label>
+            <input type="text" formControlName="lugar"
+              [placeholder]="form.get('modalidad')?.value === 'VIRTUAL' ? 'https://meet.google.com/xyz' : 'Aula B-204'"
+              class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347]" />
+            @if (form.get('lugar')?.invalid && form.get('lugar')?.touched) {
+              <p class="text-[10px] text-red-500">Especifica el lugar o enlace.</p>
+            }
+          </div>
+        </div>
+
+        <!-- Descripción / Temas -->
+        <div class="space-y-1">
+          <label class="block text-[11px] font-bold text-[#051F20]">Descripción / Temas de Asesoría</label>
+          <textarea formControlName="descripcion" rows="2"
+            placeholder="Ej. Dudas para el parcial de integrales definidas, ejercicios prácticos..."
+            class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347]"></textarea>
+        </div>
+
+        <!-- Estado (solo visible al editar) -->
+        @if (editandoId()) {
+          <div class="space-y-1 p-3 bg-gray-50 rounded-xl border border-gray-200">
+            <div class="flex items-center justify-between">
+              <label class="block text-[11px] font-bold text-[#051F20]">Estado de la Tutoría</label>
+              <span class="text-[10px] text-gray-500 font-medium">Modifica la fase de la sesión</span>
+            </div>
+            <select formControlName="estado"
+              class="w-full px-3 py-2 text-xs bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 focus:outline-none focus:border-[#235347]">
+              <option value="DISPONIBLE">🟢 DISPONIBLE (Abierta para reservas)</option>
+              <option value="OCUPADA">🔵 OCUPADA (Cupo reservado)</option>
+              <option value="FINALIZADA">⚪ FINALIZADA (Sesión concluida)</option>
+              <option value="CANCELADA">🔴 CANCELADA (Suspendida por el tutor)</option>
+            </select>
+          </div>
+        }
+
+        <!-- Botones Modal -->
+        <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-2">
+          <button type="button" (click)="cerrarModal()"
+            class="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer">
+            Cancelar
+          </button>
+          <button type="submit"
+            class="px-5 py-2 rounded-xl text-xs font-semibold bg-[#173831] hover:bg-[#235347] text-white shadow-sm transition-colors cursor-pointer">
+            {{ editandoId() ? 'Actualizar Sesión' : 'Publicar Tutoría' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════
+     MODAL LISTA DE ESTUDIANTES INSCRITOS
+════════════════════════════════════════════════ -->
+@if (modalEstudiantesAbierto() && tutoriaSeleccionadaEstudiantes()) {
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl border border-gray-100 animate-in fade-in duration-200">
+
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="px-2 py-0.5 rounded-full bg-[#DBF0DD] text-[#173831] text-[10px] font-bold">
+              {{ tutoriaSeleccionadaEstudiantes()?.materia?.nombre }}
+            </span>
+            <span class="text-xs text-gray-400">•</span>
+            <span class="text-xs text-gray-500 font-mono">
+              {{ tutoriaSeleccionadaEstudiantes()?.fecha }} · {{ tutoriaSeleccionadaEstudiantes()?.hora }}
+            </span>
+          </div>
+          <h2 class="text-base font-bold text-[#051F20]">Estudiantes de la Sesión</h2>
+        </div>
+        <button (click)="cerrarModalEstudiantes()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+        <!-- Estudiantes Confirmados / Aceptados -->
+        <div>
+          <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-800 mb-2 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
+            <span>Confirmados ({{ obtenerInscritos(tutoriaSeleccionadaEstudiantes()?.id).length }})</span>
+          </div>
+
+          @if (obtenerInscritos(tutoriaSeleccionadaEstudiantes()?.id).length === 0) {
+            <p class="text-xs text-gray-400 italic py-2">No hay estudiantes confirmados para esta sesión todavía.</p>
+          } @else {
+            <div class="space-y-2">
+              @for (s of obtenerInscritos(tutoriaSeleccionadaEstudiantes()?.id); track s.id) {
+                <div class="p-3 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs">
+                      {{ s.estudiante?.nombre ? s.estudiante!.nombre.charAt(0) : 'E' }}
+                    </div>
+                    <div>
+                      <div class="font-bold text-xs text-[#051F20]">{{ s.estudiante?.nombre }} {{ s.estudiante?.apellido }}</div>
+                      <div class="text-[10px] text-gray-500 font-mono">{{ s.estudiante?.correo }}</div>
+                    </div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">
+                    Inscrito
+                  </span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Solicitudes Pendientes para esta tutoría -->
+        @if (obtenerPendientes(tutoriaSeleccionadaEstudiantes()?.id).length > 0) {
+          <div class="pt-3 border-t border-gray-100">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-amber-800 mb-2 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm text-amber-600">pending</span>
+              <span>Solicitudes por responder ({{ obtenerPendientes(tutoriaSeleccionadaEstudiantes()?.id).length }})</span>
+            </div>
+
+            <div class="space-y-2">
+              @for (s of obtenerPendientes(tutoriaSeleccionadaEstudiantes()?.id); track s.id) {
+                <div class="p-3 bg-amber-50/50 rounded-2xl border border-amber-200/60 flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-xs">
+                      {{ s.estudiante?.nombre ? s.estudiante!.nombre.charAt(0) : 'E' }}
+                    </div>
+                    <div>
+                      <div class="font-bold text-xs text-[#051F20]">{{ s.estudiante?.nombre }} {{ s.estudiante?.apellido }}</div>
+                      <div class="text-[10px] text-gray-500 font-mono">{{ s.estudiante?.correo }}</div>
+                    </div>
+                  </div>
+                  <a routerLink="/tutor/solicitudes" (click)="cerrarModalEstudiantes()"
+                    class="text-[10px] font-semibold text-amber-700 hover:underline">
+                    Gestionar en Solicitudes →
+                  </a>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="pt-4 border-t border-gray-100 flex justify-end">
+        <button type="button" (click)="cerrarModalEstudiantes()"
+          class="px-4 py-2 rounded-xl text-xs font-semibold bg-[#173831] text-white hover:bg-[#235347] transition-colors cursor-pointer">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
