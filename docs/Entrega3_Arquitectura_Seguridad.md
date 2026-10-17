@@ -70,81 +70,44 @@ De acuerdo con las reglas de negocio de una institución universitaria:
 
 ---
 
-## 4. Flujo de Autenticación y Emisión de Tokens (Diagrama de Secuencia)
+## 4. Flujo de Autenticación y Emisión de Tokens (Login)
+
+### 💡 Explicación Sencilla (Analogía del Carnet Universitario):
+> *"El proceso de login funciona exactamente como la portería de la universidad: el usuario presenta sus credenciales (correo y contraseña). El sistema verifica el archivo central (la base de datos MySQL en AWS). Si los datos son válidos, no guarda una sesión en memoria; en su lugar, le entrega al usuario un carnet digital sellado criptográficamente (Token JWT) con su nombre, rol e ID. A partir de ese momento, el usuario guarda ese carnet en su navegador para cualquier trámite posterior."*
+
+### Diagrama de Flujo del Login:
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Cliente as Cliente (Angular / Postman)
-    participant AuthCtrl as AuthController
-    participant AuthSvc as AuthService
-    participant AuthMgr as AuthenticationManager
-    participant UserDet as UserDetailsServiceImpl
-    participant Provider as JwtTokenProvider
-    participant BD as AWS RDS MySQL
-
-    Cliente->>AuthCtrl: POST /api/auth/login {correo, password}
-    AuthCtrl->>AuthSvc: login(request)
-    AuthSvc->>AuthMgr: authenticate(UsernamePasswordAuthenticationToken)
-    AuthMgr->>UserDet: loadUserByUsername(correo)
-    UserDet->>BD: findByCorreo(correo)
-    BD-->>UserDet: Usuario Entity
-    UserDet-->>AuthMgr: UserDetails (con hash BCrypt y ROLE_)
-    AuthMgr->>AuthMgr: passwordEncoder.matches(password, hash)
-    alt Credenciales Incorrectas o Usuario Inactivo
-        AuthMgr-->>AuthSvc: BadCredentialsException / DisabledException
-        AuthSvc-->>Cliente: 401 Unauthorized (JSON)
-    else Credenciales Válidas
-        AuthMgr-->>AuthSvc: Authentication Exitosa
-        AuthSvc->>Provider: generateToken(auth)
-        Note over Provider: Firma con HS256 + Secret Key<br/>Inyecta claims: userId, role, sub, nombre
-        Provider-->>AuthSvc: token (String)
-        AuthSvc-->>AuthCtrl: AuthResponse {token, rol, nombre, ...}
-        AuthCtrl-->>Cliente: 200 OK + AuthResponse
-    end
+flowchart TD
+    A["👤 1. Usuario envía Correo y Contraseña<br/>(POST /api/auth/login)"] --> B["🔍 2. Backend busca usuario en MySQL<br/>y valida contraseña con BCrypt"]
+    
+    B -->|❌ Contraseña incorrecta o usuario inactivo| C["🚫 Error 401 Unauthorized<br/>(Credenciales inválidas)"]
+    
+    B -->|✅ Credenciales correctas| D["🔐 3. Backend genera Token JWT firmado<br/>(Incluye rol, ID y correo con expiración de 24h)"]
+    
+    D --> E["🎟️ 4. Cliente recibe Token JWT y Datos de Sesión<br/>(Se guarda en localStorage para navegar)"]
 ```
 
 ---
 
 ## 5. Pipeline de Peticiones Protegidas y Validación de Tokens
 
+### 💡 Explicación Sencilla:
+> *"Cada vez que el usuario quiere realizar una acción en el sistema (por ejemplo, ver tutorías, crear una materia o solicitar un cupo), presenta su carnet digital en la cabecera HTTP (`Authorization: Bearer <token>`). El vigilante de seguridad (`JwtAuthenticationFilter`) solo hace dos comprobaciones clave: 1) ¿El carnet tiene el sello auténtico y no está vencido? 2) ¿El rol que dice el carnet tiene permiso para entrar a este salón específico según `@PreAuthorize`? Si cumple ambas, pasa directamente sin volver a consultar la contraseña."*
+
+### Diagrama de Flujo de Validación de Peticiones:
+
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Cliente as Cliente (Angular / Postman)
-    participant Cors as CorsFilter
-    participant JwtFilter as JwtAuthenticationFilter
-    participant Provider as JwtTokenProvider
-    participant SecContext as SecurityContextHolder
-    participant SecChain as SecurityFilterChain (@PreAuthorize)
-    participant Controller as Business Controller
-
-    Cliente->>Cors: Petición HTTP + Header "Authorization: Bearer <token>"
-    Cors->>JwtFilter: Petición verificada CORS
-    JwtFilter->>JwtFilter: Extraer token del header
-
-    alt Token ausente o prefijo inválido
-        JwtFilter->>SecChain: Continuar sin autenticación
-        SecChain-->>Cliente: 401 Unauthorized (JwtAuthEntryPoint)
-    else Token presente
-        JwtFilter->>Provider: validateToken(token)
-        alt Token expirado, malformado o firma alterada
-            Provider-->>JwtFilter: false / JwtException
-            JwtFilter->>SecChain: No inyecta autenticación
-            SecChain-->>Cliente: 401 Unauthorized (JwtAuthEntryPoint)
-        else Token válido
-            JwtFilter->>Provider: getUsername(token), getAuthorities(token)
-            JwtFilter->>SecContext: setAuthentication(UsernamePasswordAuthenticationToken)
-            JwtFilter->>SecChain: Continuar con contexto autenticado
-            SecChain->>SecChain: Evaluar @PreAuthorize contra rol del token
-            alt Rol insuficiente para el endpoint
-                SecChain-->>Cliente: 403 Forbidden (CustomAccessDeniedHandler)
-            else Rol autorizado
-                SecChain->>Controller: Invocar método del negocio
-                Controller-->>Cliente: 200/201 OK + Datos JSON
-            end
-        end
-    end
+flowchart TD
+    A["🌐 1. Cliente hace petición a ruta protegida<br/>(Envía header: Authorization: Bearer TOKEN)"] --> B{"👮 2. Filtro de Seguridad (JwtFilter)<br/>¿Trae Token JWT válido y no vencido?"}
+    
+    B -->|❌ No trae token o está vencido| C["⛔ Error 401 Unauthorized<br/>(No autenticado)"]
+    
+    B -->|✅ Token válido y auténtico| D{"🛡️ 3. Regla de Rol (@PreAuthorize)<br/>¿El rol del usuario tiene permiso?"}
+    
+    D -->|❌ Rol insuficiente<br/>Ej: Estudiante intentando acceder a ruta de Admin| E["🚫 Error 403 Forbidden<br/>(Acceso Denegado por Rol)"]
+    
+    D -->|✅ Rol autorizado| F["🚀 4. Pasa al Controlador del Sistema<br/>Ejecuta la acción y devuelve datos 200/201 OK"]
 ```
 
 ---
