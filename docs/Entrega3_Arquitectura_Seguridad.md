@@ -74,13 +74,23 @@ De acuerdo con las reglas de negocio de una institución universitaria:
 
 ```mermaid
 flowchart TD
-    A["👤 1. Usuario envía Correo y Contraseña<br/>(POST /api/auth/login)"] --> B["🔍 2. Backend busca usuario en MySQL<br/>y valida contraseña con BCrypt"]
-    
-    B -->|❌ Contraseña incorrecta o usuario inactivo| C["🚫 Error 401 Unauthorized<br/>(Credenciales inválidas)"]
-    
-    B -->|✅ Credenciales correctas| D["🔐 3. Backend genera Token JWT firmado<br/>(Incluye rol, ID y correo con expiración de 24h)"]
-    
-    D --> E["🎟️ 4. Cliente recibe Token JWT y Datos de Sesión<br/>(Se guarda en localStorage para navegar)"]
+    A["👤 1. Cliente envía Correo y Contraseña<br/><code>POST /api/auth/login</code>"] --> B
+
+    subgraph SS1 ["🛡️ SPRING SECURITY (Autenticación)"]
+        B["🔍 2. AuthenticationManager consulta MySQL<br/>y valida credenciales con <b>BCrypt</b>"]
+    end
+
+    B -->|❌ Credenciales inválidas| C["🚫 Error 401 Unauthorized"]
+
+    subgraph RBAC1 ["👥 RBAC (Asignación de Rol)"]
+        B -->|✅ Credenciales válidas| D["📋 3. Se recupera el rol institucional del usuario<br/>(ADMINISTRADOR / TUTOR / ESTUDIANTE)"]
+    end
+
+    subgraph JWT1 ["🔐 JWT (Generación y Firma)"]
+        D --> E["🎫 4. JwtTokenProvider genera y firma el Token<br/>(Empaqueta correo, ID, expiración y ROL con HS256)"]
+    end
+
+    E --> F["💾 5. Cliente recibe Token JWT y Datos de Sesión<br/>(Persistencia en localStorage)"]
 ```
 
 ---
@@ -89,15 +99,22 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["🌐 1. Cliente hace petición a ruta protegida<br/>(Envía header: Authorization: Bearer TOKEN)"] --> B{"👮 2. Filtro de Seguridad (JwtFilter)<br/>¿Trae Token JWT válido y no vencido?"}
-    
-    B -->|❌ No trae token o está vencido| C["⛔ Error 401 Unauthorized<br/>(No autenticado)"]
-    
-    B -->|✅ Token válido y auténtico| D{"🛡️ 3. Regla de Rol (@PreAuthorize)<br/>¿El rol del usuario tiene permiso?"}
-    
-    D -->|❌ Rol insuficiente<br/>Ej: Estudiante intentando acceder a ruta de Admin| E["🚫 Error 403 Forbidden<br/>(Acceso Denegado por Rol)"]
-    
-    D -->|✅ Rol autorizado| F["🚀 4. Pasa al Controlador del Sistema<br/>Ejecuta la acción y devuelve datos 200/201 OK"]
+    A["🌐 1. Cliente envía petición con cabecera<br/><code>Authorization: Bearer &lt;token&gt;</code>"] --> B
+
+    subgraph JWT2 ["🔐 JWT + SPRING SECURITY (Filtro de Entrada)"]
+        B{"👮 2. JwtAuthenticationFilter<br/>¿Token JWT firmado y no expirado?"}
+    end
+
+    B -->|❌ Token ausente, alterado o vencido| C["⛔ Error 401 Unauthorized<br/>(JwtAuthEntryPoint)"]
+
+    subgraph RBAC2 ["👥 RBAC (Control de Acceso por Roles)"]
+        B -->|✅ Token válido| D{"🛡️ 3. Validación @PreAuthorize<br/>¿El ROL del token tiene permiso para este endpoint?"}
+        D -->|❌ Rol no autorizado<br/>Ej: Estudiante en ruta de Admin| E["🚫 Error 403 Forbidden<br/>(CustomAccessDeniedHandler)"]
+    end
+
+    subgraph APP ["🚀 CONTROLADOR DEL SISTEMA"]
+        D -->|✅ Rol autorizado| F["📦 4. Se ejecuta el método del negocio<br/>(200 OK / 201 Created)"]
+    end
 ```
 
 ---
