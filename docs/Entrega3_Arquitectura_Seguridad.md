@@ -72,11 +72,6 @@ De acuerdo con las reglas de negocio de una institución universitaria:
 
 ## 4. Flujo de Autenticación y Emisión de Tokens (Login)
 
-### 💡 Explicación Sencilla (Analogía del Carnet Universitario):
-> *"El proceso de login funciona exactamente como la portería de la universidad: el usuario presenta sus credenciales (correo y contraseña). El sistema verifica el archivo central (la base de datos MySQL en AWS). Si los datos son válidos, no guarda una sesión en memoria; en su lugar, le entrega al usuario un carnet digital sellado criptográficamente (Token JWT) con su nombre, rol e ID. A partir de ese momento, el usuario guarda ese carnet en su navegador para cualquier trámite posterior."*
-
-### Diagrama de Flujo del Login:
-
 ```mermaid
 flowchart TD
     A["👤 1. Usuario envía Correo y Contraseña<br/>(POST /api/auth/login)"] --> B["🔍 2. Backend busca usuario en MySQL<br/>y valida contraseña con BCrypt"]
@@ -91,11 +86,6 @@ flowchart TD
 ---
 
 ## 5. Pipeline de Peticiones Protegidas y Validación de Tokens
-
-### 💡 Explicación Sencilla:
-> *"Cada vez que el usuario quiere realizar una acción en el sistema (por ejemplo, ver tutorías, crear una materia o solicitar un cupo), presenta su carnet digital en la cabecera HTTP (`Authorization: Bearer <token>`). El vigilante de seguridad (`JwtAuthenticationFilter`) solo hace dos comprobaciones clave: 1) ¿El carnet tiene el sello auténtico y no está vencido? 2) ¿El rol que dice el carnet tiene permiso para entrar a este salón específico según `@PreAuthorize`? Si cumple ambas, pasa directamente sin volver a consultar la contraseña."*
-
-### Diagrama de Flujo de Validación de Peticiones:
 
 ```mermaid
 flowchart TD
