@@ -265,7 +265,7 @@ erDiagram
 
 ---
 
-## 🔐 Seguridad y Gestión de Cuentas
+## 🔐 Arquitectura de Seguridad Implementada — Entrega 3 (Spring Security + JWT + RBAC)
 
 ### Modelo Institucional Estricto
 
@@ -313,7 +313,33 @@ erDiagram
        │  (El tutor ya puede hacer login con sus credenciales)
 ```
 
-### Componentes de Seguridad
+### Pipeline de Filtros de Seguridad y Procesamiento
+
+Cada solicitud entrante a la API REST atraviesa la cadena de filtros configurada en Spring Security 6:
+
+```text
+[ Petición HTTP ] 
+       │
+       ▼
+[ CorsFilter ] ────────────────── Valida orígenes cruzados permitidos (Frontend Angular http://localhost:4200)
+       │
+       ▼
+[ JwtAuthenticationFilter ] ───── Extrae cabecera "Authorization: Bearer <token>"
+       │                          Valida firma criptográfica (HS256) y expiración con JwtTokenProvider
+       │                          Si es válido, inyecta UserDetails con authorities en SecurityContextHolder
+       │
+       ▼
+[ SecurityFilterChain ] ───────── Evalúa SessionCreationPolicy.STATELESS y delega a @PreAuthorize en controladores
+       │
+   ┌───┴────────────────────────┐
+   │                            │
+   ▼                            ▼
+[ 200/201 OK ]           [ Excepciones de Seguridad ]
+Respuesta del Controller        ├── 401 Unauthorized -> JwtAuthEntryPoint (JSON uniforme)
+                                └── 403 Forbidden    -> CustomAccessDeniedHandler (JSON uniforme)
+```
+
+### Componentes de Seguridad (Detalle Técnico de la Entrega 3)
 
 | Componente | Clase | Responsabilidad |
 |---|---|---|

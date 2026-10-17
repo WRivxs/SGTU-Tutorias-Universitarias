@@ -4,135 +4,239 @@
 **Semana:** 8  
 **Fecha:** Octubre 2026  
 **Integrantes:**
-- Wadid Rivas Payares (Encargado Backend)
+- Wadid Rivas Payares (Encargado Backend & Arquitectura)
 - Azael Espitia Toribio (Encargado Base de Datos / AWS RDS)
 - Eduardo Julio Bettin Avilez (Líder Técnico / Frontend)
 - Jhon Jader Bertel Ortega (Encargado QA / Documentación)
 
 ---
 
-## 1. Introducción y Enfoque de Seguridad
+## 1. Introducción y Objetivos de la Entrega 3
 
-El Sistema de Gestión de Tutorías Universitarias (SGTU) implementa un modelo de seguridad robusto, sin estado (**Stateless**) y basado en estándares de la industria para APIs RESTful.
+El **Sistema de Gestión de Tutorías Universitarias (SGTU)** implementa un modelo de seguridad empresarial robusto, sin estado (**Stateless**) y basado en los estándares RFC más exigentes de la industria para APIs RESTful.
 
-La solución integra:
-- **Spring Security 6.3.x:** Control de filtros HTTP, cadena de seguridad y autorización declarativa con `@EnableMethodSecurity(prePostEnabled = true)`.
-- **JSON Web Tokens (JJWT 0.12.6):** Autenticación mediante tokens firmados criptográficamente bajo el estándar RFC 7519.
-- **BCrypt Password Hashing:** Cifrado unidireccional de contraseñas con factor de coste 10 (`$2a$10$...`), protegiendo las credenciales contra ataques de fuerza bruta y diccionarios.
+### Objetivos Clave de Seguridad:
+1. **Confidencialidad:** Garantizar que los recursos sensibles solo sean accesibles por los actores autorizados según su rol institucional.
+2. **Autenticación Fuerte:** Verificación criptográfica mediante JSON Web Tokens (JWT) y cifrado unidireccional de contraseñas.
+3. **Control de Acceso Basado en Roles (RBAC):** Restricción declarativa a nivel de método y de endpoint para los tres roles del sistema (`ADMINISTRADOR`, `TUTOR`, `ESTUDIANTE`).
+4. **Respuestas de Error Estandarizadas:** Formato JSON uniforme compatible con RFC 7807 sin exposición de stacktraces internos.
 
 ---
 
-## 2. Modelo Institucional Estricto y Control de Acceso por Roles (RBAC)
+## 2. Decisiones de Diseño y Fundamentos Arquitectónicos
+
+| Decisión de Diseño | Alternativa Descartada | Justificación Técnica |
+|---|---|---|
+| **Arquitectura Stateless (JWT)** | Sesiones HTTP (JSESSIONID con cookies) | Permite escalabilidad horizontal sin necesidad de compartir memoria de sesión entre instancias, desacoplamiento total cliente-servidor (SPA Angular / Móvil) y eliminación natural de vulnerabilidades CSRF. |
+| **Firma HMAC-SHA256 (HS256)** | RSA asimétrico (RS256) | Para una arquitectura monolítica modular donde el mismo servicio emite y valida los tokens, HS256 ofrece un rendimiento óptimo de verificación con mínimo overhead computacional. |
+| **BCrypt Hashing (10 rounds)** | SHA-256 / MD5 con Salt | BCrypt implementa una función de derivación de clave adaptativa (slow-hash) resistente a ataques por fuerza bruta mediante GPU y tablas arcoíris. |
+| **Autorización Declarativa (`@PreAuthorize`)** | Seguridad manual por `HttpServletRequest` | Garantiza que las reglas de autorización residan junto al código del negocio, evitando bypasses accidentales ante cambios de ruta. |
+| **Respuestas JSON en 401 y 403** | Páginas de error HTML por defecto de Spring | Evita la rotura del parser JSON en el cliente Frontend y asegura una experiencia de usuario consistente. |
+
+---
+
+## 3. Modelo Institucional Estricto y Matriz RBAC
 
 De acuerdo con las reglas de negocio de una institución universitaria:
 1. **Sin auto-registro público:** No existe creación libre de cuentas anónimas. El único endpoint público del módulo de autenticación es `POST /api/auth/login`.
-2. **Creación exclusiva por Administrador:** La creación de cualquier usuario (Estudiantes, Tutores u otros Administradores) está centralizada en `POST /api/usuarios`, restringida a usuarios con rol `ADMINISTRADOR`.
+2. **Creación centralizada:** La creación de cualquier usuario (Estudiantes, Tutores u otros Administradores) está reservada exclusivamente para el `ADMINISTRADOR` mediante `POST /api/usuarios`.
 3. **Roles implementados:**
-   - `ADMINISTRADOR`: Acceso total al sistema, gestión de usuarios, materias, auditoría y parámetros globales.
-   - `TUTOR`: Programación y gestión de sesiones de tutoría, consulta de materias y aceptación/rechazo de solicitudes de estudiantes.
-   - `ESTUDIANTE`: Consulta de materias, visualización de tutorías disponibles, creación y seguimiento de sus propias solicitudes.
+   - `ADMINISTRADOR`: Acceso irrestricto, auditoría, gestión de usuarios, materias y supervisión global.
+   - `TUTOR`: Programación y gestión de sesiones grupales, consulta de materias y aceptación/rechazo de solicitudes de estudiantes.
+   - `ESTUDIANTE`: Consulta de materias, catálogo de tutorías disponibles, solicitud de cupos y seguimiento de sus propias inscripciones.
 
-### Matriz de Permisos RBAC
+### Matriz Detallada de Permisos RBAC
 
-| Endpoint | Método | Roles Permitidos | Propósito |
+| Módulo / Endpoint | Método | Roles Autorizados | Regla de Autorización (@PreAuthorize) |
 |---|---|---|---|
-| `/api/auth/login` | POST | Público (Todos) | Iniciar sesión y emitir JWT |
-| `/api/usuarios/**` | GET, POST, PUT, DELETE, PATCH | `ADMINISTRADOR` | Gestión completa de usuarios |
-| `/api/usuarios/{id}` | GET | `ADMINISTRADOR`, `TUTOR`, `ESTUDIANTE` | Consulta de perfil |
-| `/api/materias` | POST, PUT, DELETE | `ADMINISTRADOR` | Mantenimiento del catálogo |
-| `/api/materias/**` | GET | `ADMINISTRADOR`, `TUTOR`, `ESTUDIANTE` | Consulta de materias activas |
-| `/api/tutores` | POST, DELETE | `ADMINISTRADOR` | Alta y baja de perfil tutor |
-| `/api/tutores/{id}` | PUT | `ADMINISTRADOR`, `TUTOR` | Edición de disponibilidad |
-| `/api/tutores/**` | GET | `ADMINISTRADOR`, `TUTOR`, `ESTUDIANTE` | Consulta de tutores |
-| `/api/tutorias` | POST, PUT, PATCH, DELETE | `ADMINISTRADOR`, `TUTOR` | Programar y gestionar tutorías |
-| `/api/tutorias/**` | GET | `ADMINISTRADOR`, `TUTOR`, `ESTUDIANTE` | Consulta de tutorías disponibles |
-| `/api/solicitudes` | POST | `ESTUDIANTE` | Solicitar una tutoría disponible |
-| `/api/solicitudes/{id}/responder`| PATCH | `ADMINISTRADOR`, `TUTOR` | Aceptar o rechazar solicitud |
-| `/api/solicitudes/**` | GET, DELETE | `ADMINISTRADOR`, `TUTOR`, `ESTUDIANTE` | Consulta y cancelación |
-| `/swagger-ui/**`, `/v3/api-docs/**` | GET | Público | Documentación interactiva OpenAPI |
+| `/api/auth/login` | POST | **Público** | `permitAll()` |
+| `/api/usuarios` | GET, POST | `ADMINISTRADOR` | `hasRole('ADMINISTRADOR')` |
+| `/api/usuarios/{id}` | GET | `ADMINISTRADOR`, `TUTOR`, `ESTUDIANTE` | Autenticado (ver perfil propio / admin) |
+| `/api/usuarios/{id}` | PUT, DELETE | `ADMINISTRADOR` | `hasRole('ADMINISTRADOR')` |
+| `/api/usuarios/{id}/estado` | PATCH | `ADMINISTRADOR` | `hasRole('ADMINISTRADOR')` |
+| `/api/materias` | GET | `ADMINISTRADOR`, `TUTOR`, `ESTUDIANTE` | Autenticado |
+| `/api/materias` | POST, PUT, DELETE | `ADMINISTRADOR` | `hasRole('ADMINISTRADOR')` |
+| `/api/tutores/**` | GET | `ADMINISTRADOR`, `TUTOR`, `ESTUDIANTE` | Autenticado |
+| `/api/tutores` | POST, DELETE | `ADMINISTRADOR` | `hasRole('ADMINISTRADOR')` |
+| `/api/tutores/{id}` | PUT | `ADMINISTRADOR`, `TUTOR` | `hasRole('ADMINISTRADOR') or hasRole('TUTOR')` |
+| `/api/tutorias` | GET | `ADMINISTRADOR`, `TUTOR`, `ESTUDIANTE` | Autenticado |
+| `/api/tutorias` | POST, PUT, DELETE | `ADMINISTRADOR`, `TUTOR` | `hasRole('ADMINISTRADOR') or hasRole('TUTOR')` |
+| `/api/tutorias/{id}/estado` | PATCH | `ADMINISTRADOR`, `TUTOR` | `hasRole('ADMINISTRADOR') or hasRole('TUTOR')` |
+| `/api/solicitudes` | GET | `ADMINISTRADOR`, `TUTOR`, `ESTUDIANTE` | Autenticado |
+| `/api/solicitudes` | POST | `ESTUDIANTE` | `hasRole('ESTUDIANTE')` |
+| `/api/solicitudes/{id}/responder` | PATCH | `ADMINISTRADOR`, `TUTOR` | `hasRole('ADMINISTRADOR') or hasRole('TUTOR')` |
+| `/api/solicitudes/{id}` | DELETE | `ADMINISTRADOR`, `ESTUDIANTE` | `hasRole('ADMINISTRADOR') or hasRole('ESTUDIANTE')` |
+| `/swagger-ui/**`, `/v3/api-docs/**` | GET | **Público** | `permitAll()` |
 
 ---
 
-## 3. Arquitectura y Componentes de Seguridad
+## 4. Flujo de Autenticación y Emisión de Tokens (Diagrama de Secuencia)
 
-El flujo de procesamiento de cada petición sigue la siguiente arquitectura de componentes:
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Cliente as Cliente (Angular / Postman)
+    participant AuthCtrl as AuthController
+    participant AuthSvc as AuthService
+    participant AuthMgr as AuthenticationManager
+    participant UserDet as UserDetailsServiceImpl
+    participant Provider as JwtTokenProvider
+    participant BD as AWS RDS MySQL
 
+    Cliente->>AuthCtrl: POST /api/auth/login {correo, password}
+    AuthCtrl->>AuthSvc: login(request)
+    AuthSvc->>AuthMgr: authenticate(UsernamePasswordAuthenticationToken)
+    AuthMgr->>UserDet: loadUserByUsername(correo)
+    UserDet->>BD: findByCorreo(correo)
+    BD-->>UserDet: Usuario Entity
+    UserDet-->>AuthMgr: UserDetails (con hash BCrypt y ROLE_)
+    AuthMgr->>AuthMgr: passwordEncoder.matches(password, hash)
+    alt Credenciales Incorrectas o Usuario Inactivo
+        AuthMgr-->>AuthSvc: BadCredentialsException / DisabledException
+        AuthSvc-->>Cliente: 401 Unauthorized (JSON)
+    else Credenciales Válidas
+        AuthMgr-->>AuthSvc: Authentication Exitosa
+        AuthSvc->>Provider: generateToken(auth)
+        Note over Provider: Firma con HS256 + Secret Key<br/>Inyecta claims: userId, role, sub, nombre
+        Provider-->>AuthSvc: token (String)
+        AuthSvc-->>AuthCtrl: AuthResponse {token, rol, nombre, ...}
+        AuthCtrl-->>Cliente: 200 OK + AuthResponse
+    end
 ```
-[ Petición HTTP ] 
-       │
-       ▼
-[ CorsFilter ] ────────────────── Valida orígenes cruzados (Angular localhost:4200)
-       │
-       ▼
-[ JwtAuthenticationFilter ] ───── Extrae header "Authorization: Bearer <token>"
-       │                          Valida firma, expiración y claims con JwtTokenProvider
-       │                          Si es válido, monta UserDetails en SecurityContextHolder
-       │
-       ▼
-[ SecurityFilterChain ] ───────── Aplica reglas de URL y delega a @PreAuthorize en controladores
-       │
-   ┌───┴────────────────────────┐
-   │                            │
-   ▼                            ▼
-[ 200/201 OK ]           [ Errores de Seguridad ]
-Respuesta del Controller        ├── 401 Unauthorized -> JwtAuthEntryPoint (JSON)
-                                └── 403 Forbidden    -> CustomAccessDeniedHandler (JSON)
+
+---
+
+## 5. Pipeline de Peticiones Protegidas y Validación de Tokens
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Cliente as Cliente (Angular / Postman)
+    participant Cors as CorsFilter
+    participant JwtFilter as JwtAuthenticationFilter
+    participant Provider as JwtTokenProvider
+    participant SecContext as SecurityContextHolder
+    participant SecChain as SecurityFilterChain (@PreAuthorize)
+    participant Controller as Business Controller
+
+    Cliente->>Cors: Petición HTTP + Header "Authorization: Bearer <token>"
+    Cors->>JwtFilter: Petición verificada CORS
+    JwtFilter->>JwtFilter: Extraer token del header
+
+    alt Token ausente o prefijo inválido
+        JwtFilter->>SecChain: Continuar sin autenticación
+        SecChain-->>Cliente: 401 Unauthorized (JwtAuthEntryPoint)
+    else Token presente
+        JwtFilter->>Provider: validateToken(token)
+        alt Token expirado, malformado o firma alterada
+            Provider-->>JwtFilter: false / JwtException
+            JwtFilter->>SecChain: No inyecta autenticación
+            SecChain-->>Cliente: 401 Unauthorized (JwtAuthEntryPoint)
+        else Token válido
+            JwtFilter->>Provider: getUsername(token), getAuthorities(token)
+            JwtFilter->>SecContext: setAuthentication(UsernamePasswordAuthenticationToken)
+            JwtFilter->>SecChain: Continuar con contexto autenticado
+            SecChain->>SecChain: Evaluar @PreAuthorize contra rol del token
+            alt Rol insuficiente para el endpoint
+                SecChain-->>Cliente: 403 Forbidden (CustomAccessDeniedHandler)
+            else Rol autorizado
+                SecChain->>Controller: Invocar método del negocio
+                Controller-->>Cliente: 200/201 OK + Datos JSON
+            end
+        end
+    end
 ```
 
-### Descripción de Componentes:
-1. **`SecurityConfig`:** Configuración central de Spring Security. Deshabilita CSRF (innecesario en APIs stateless), activa política de sesiones `SessionCreationPolicy.STATELESS`, inyecta el `CorsConfigurationSource` y define el bean `PasswordEncoder` (`BCryptPasswordEncoder`).
-2. **`JwtTokenProvider`:** Clase encargada de firmar tokens con algoritmo HMAC-SHA256 (`HS256`), extraer el correo (`subject`), el rol (`ROLE_...`), el ID de usuario y validar que el token no haya sido manipulado ni haya expirado.
-3. **`JwtAuthenticationFilter`:** Filtro de tipo `OncePerRequestFilter` que intercepta cada llamada, valida el token y propaga la identidad autenticada al hilo de ejecución (`SecurityContextHolder`).
-4. **`UserDetailsServiceImpl`:** Implementa la interfaz estándar de Spring Security para cargar los datos del usuario desde `UsuarioRepository` y mapear sus roles como `GrantedAuthority`.
-5. **`JwtAuthEntryPoint` & `CustomAccessDeniedHandler`:** Garantizan que las fallas de autenticación (401) y autorización (403) respondan siempre con un cuerpo JSON uniforme y no con páginas de error HTML.
-
 ---
 
-## 4. Ciclo de Vida del Token JWT
+## 6. Estructura y Anatomía del Token JWT (RFC 7519)
 
-- **Header:** Algoritmo `HS256` y tipo `JWT`.
-- **Payload:**
-  - `sub`: Correo electrónico del usuario (identificador principal).
-  - `userId`: Identificador único numérico en base de datos.
-  - `role`: Rol institucional (`ROLE_ADMINISTRADOR`, `ROLE_TUTOR`, `ROLE_ESTUDIANTE`).
-  - `nombre`: Nombre completo del usuario para visualización en cliente.
-  - `iat`: Timestamp de emisión.
-  - `exp`: Timestamp de expiración (24 horas por defecto, configurable mediante `jwt.expiration`).
-- **Signature:** Firma simétrica generada a partir de `jwt.secret` (almacenado como variable de entorno).
+El token emitido por el sistema sigue la estructura estándar compacta de 3 partes separadas por puntos (`header.payload.signature`):
 
----
-
-## 5. Respuestas de Error Estandarizadas
-
-Cualquier excepción de seguridad genera un JSON con la siguiente estructura:
-
-### Error 401 Unauthorized (Sin token o credenciales incorrectas):
+### 1. Header:
 ```json
 {
-  "timestamp": "2026-10-03T17:30:00",
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+
+### 2. Payload (Claims Institucionales):
+```json
+{
+  "sub": "wadid.tutor@tutorias.com",
+  "userId": 2,
+  "role": "ROLE_TUTOR",
+  "nombre": "Wadid Rivas",
+  "iat": 1729180800,
+  "exp": 1729267200
+}
+```
+* **`sub` (Subject):** Correo electrónico institucional del usuario autenticado.
+* **`userId`:** Identificador único de clave primaria en la base de datos relacional.
+* **`role`:** Rol asignado con el prefijo obligatorio `ROLE_` requerido por Spring Security.
+* **`nombre`:** Nombre y apellido para visualización amigable en el cliente sin requerir consultas extra.
+* **`iat` (Issued At):** Timestamp UNIX del momento exacto de emisión.
+* **`exp` (Expiration Time):** Timestamp UNIX de expiración (24 horas después de emitido).
+
+### 3. Signature:
+Generada mediante el algoritmo HMAC-SHA256:
+$$\text{Signature} = \text{HMAC-SHA256}(\text{base64UrlEncode}(\text{Header}) + \text{"."} + \text{base64UrlEncode}(\text{Payload}), \text{JWT\_SECRET})$$
+
+---
+
+## 7. Manejo Centralizado de Excepciones de Seguridad
+
+Toda violación de seguridad o fallo de validación es capturado y transformado en una respuesta JSON predecible sin exponer información sensible del servidor:
+
+### Error 401 Unauthorized (`JwtAuthEntryPoint`):
+Se dispara cuando el cliente intenta acceder a una ruta protegida sin token, con un token vencido o con credenciales erróneas en el login:
+```json
+{
+  "timestamp": "2026-10-17T15:00:00",
   "status": 401,
   "error": "Unauthorized",
   "message": "Acceso no autorizado: credenciales inválidas o token no proporcionado / expirado",
+  "path": "/api/tutorias"
+}
+```
+
+### Error 403 Forbidden (`CustomAccessDeniedHandler`):
+Se dispara cuando el token es válido y está autenticado, pero el rol del usuario no tiene los privilegios necesarios según `@PreAuthorize`:
+```json
+{
+  "timestamp": "2026-10-17T15:00:00",
+  "status": 403,
+  "error": "Forbidden",
+  "message": "Acceso denegado: no cuenta con los permisos o rol requeridos para esta acción",
   "path": "/api/usuarios"
 }
 ```
 
-### Error 403 Forbidden (Rol no autorizado):
-```json
-{
-  "timestamp": "2026-10-03T17:30:00",
-  "status": 403,
-  "error": "Forbidden",
-  "message": "Acceso denegado: no cuenta con los permisos o rol requeridos para esta acción",
-  "path": "/api/materias"
-}
-```
+---
+
+## 8. Análisis de Mitigación de Vulnerabilidades (OWASP Top 10)
+
+| Vulnerabilidad OWASP | Riesgo Potencial | Estrategia de Mitigación en SGTU |
+|---|---|---|
+| **A01: Broken Access Control** | Un estudiante manipulando solicitudes ajenas o accediendo a rutas administrativas. | Control estricto mediante `@PreAuthorize` en cada endpoint y verificación de propiedad en la capa de servicios (`existsByEstudianteIdAndTutoriaId`). |
+| **A02: Cryptographic Failures** | Robo o exposición de contraseñas almacenadas. | Almacenamiento exclusivo con **BCrypt (factor de coste 10)**. Las contraseñas en texto claro nunca se guardan ni se retornan en las entidades (`@JsonProperty(access = WRITE_ONLY)`). |
+| **A03: Injection (SQLi)** | Inyección de SQL mediante parámetros de búsqueda. | Uso estricto de **Spring Data JPA y Hibernate** con consultas parametrizadas automáticas. Prohibición de concatenación de SQL directo. |
+| **A07: Identification and Authentication Failures** | Ataques de repetición o tokens manipulados. | Verificación de firma criptográfica con secreto de 256 bits, validación estricta de tiempo de expiración y manejo de tokens sin estado. |
 
 ---
 
-## 6. Verificación y Pruebas
+## 9. Evidencia de Pruebas y Validación
 
-La arquitectura ha sido validada mediante dos vías:
-1. **Pruebas Unitarias de Backend (`mvn test`):** 17 tests unitarios pasando exitosamente con Mockito y JUnit 5, cubriendo servicios y validación de tokens.
-2. **Colección Automatizada de Postman:** 17 pruebas automatizadas (`pm.test`) que evalúan login de cada rol, persistencia de variables en entorno, creación de registros y comprobación de respuestas 401, 403, 404 y 400.
-3. **Documentación Swagger / OpenAPI 3:** Accesible en `/swagger-ui/index.html` con botón "Authorize" para pruebas interactivas en vivo.
+La arquitectura de seguridad ha sido exhaustivamente comprobada mediante:
+
+1. **17 Pruebas Unitarias Automatizadas en JUnit 5 / Mockito:**
+   - Cobertura de autenticación exitosa, credenciales erróneas y cuentas inactivas (`AuthServiceTest`).
+   - Validación de hashes y roles en `UsuarioServiceTest`.
+2. **17 Pruebas de Integración Automatizadas en Postman:**
+   - Ejecución de la colección `SGTU-API-Entrega3.postman_collection.json`.
+   - Verificación de status codes esperados (`200`, `201`, `400`, `401`, `403`, `404`).
+   - Pruebas negativas: intento de acceso a `/api/usuarios` con token de Estudiante (resultado esperado: `403 Forbidden`).
+   - Pruebas negativas: llamada sin cabecera `Authorization` (resultado esperado: `401 Unauthorized`).
+3. **Swagger OpenAPI 3 Interactivo:**
+   - Configuración de seguridad global `bearerAuth` en `/swagger-ui/index.html`.
