@@ -17,15 +17,16 @@ import { LayoutService } from '../../../../core/services/layout.service';
       </div>
     }
 
-    <!-- Sidebar deslizable en movil, fijo en pantallas medianas y grandes -->
+    <!-- Sidebar deslizable en movil con altura dinamica (100dvh) para evitar solapamiento -->
     <aside
       [class.-translate-x-full]="!layoutService.sidebarAbierto()"
-      class="w-64 h-screen bg-[#051F20] text-white flex flex-col justify-between flex-shrink-0 select-none
+      class="w-64 h-[100dvh] max-h-[100dvh] bg-[#051F20] text-white flex flex-col justify-between flex-shrink-0 select-none
              fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out
              md:static md:translate-x-0 md:z-auto">
-      <!-- Logo y Rol -->
-      <div>
-        <div class="h-16 px-6 flex items-center justify-between border-b border-white/5">
+
+      <!-- Logo y Rol con scroll interno si es necesario -->
+      <div class="flex-1 overflow-y-auto min-h-0 flex flex-col">
+        <div class="h-16 px-6 flex items-center justify-between border-b border-white/5 shrink-0">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-[#173831] flex items-center justify-center text-[#8CB79B]">
               <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1">co_present</span>
@@ -83,12 +84,12 @@ import { LayoutService } from '../../../../core/services/layout.service';
         </div>
       </div>
 
-      <!-- Pie: Cerrar Sesion -->
-      <div class="p-3 border-t border-white/5">
+      <!-- Pie del Sidebar: Cerrar Sesion con padding inferior seguro para celulares (pb-8 md:pb-3) -->
+      <div class="p-3 pb-8 md:pb-3 border-t border-white/10 shrink-0 bg-[#051F20]">
         <button (click)="logout()"
-          class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-red-300 hover:bg-red-950/40 hover:text-red-200 transition-colors cursor-pointer">
+          class="w-full flex items-center justify-center sm:justify-start gap-3 px-3 py-2.5 rounded-lg text-xs font-bold text-red-200 bg-red-950/60 hover:bg-red-900/80 border border-red-500/20 transition-colors cursor-pointer shadow-sm">
           <span class="material-symbols-outlined text-lg">logout</span>
-          <span class="font-semibold">Cerrar Sesion</span>
+          <span>Cerrar Sesion</span>
         </button>
       </div>
     </aside>
