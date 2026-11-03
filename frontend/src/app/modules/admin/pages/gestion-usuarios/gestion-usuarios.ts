@@ -9,6 +9,8 @@ import { EstudianteService } from '../../../../core/services/estudiante.service'
 import { FacultadService } from '../../../../core/services/facultad.service';
 import { ProgramaService } from '../../../../core/services/programa.service';
 import { MateriaService } from '../../services/materia.service';
+import { DialogService } from '../../../../core/services/dialog.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 import { Usuario, RolUsuario } from '../../../../shared/models/usuario.model';
 import { Docente } from '../../../../shared/models/docente.model';
@@ -30,6 +32,8 @@ export class GestionUsuarios implements OnInit {
   private facultadService = inject(FacultadService);
   private programaService = inject(ProgramaService);
   private materiaService = inject(MateriaService);
+  private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
   private fb = inject(FormBuilder);
 
   usuarios = signal<Usuario[]>([]);
@@ -377,7 +381,16 @@ export class GestionUsuarios implements OnInit {
   }
 
   eliminarUsuario(u: Usuario): void {
-    if (!confirm(`¿Eliminar a ${u.nombre} ${u.apellido}?`)) return;
+    this.dialogService.confirmar({
+      titulo: 'Eliminar Usuario',
+      mensaje: `¿Seguro que deseas eliminar a "${u.nombre} ${u.apellido}"? Esta accion es irreversible.`,
+      tipo: 'peligro',
+      textoBtnConfirmar: 'Si, Eliminar',
+      onConfirmar: () => this._ejecutarEliminarUsuario(u)
+    });
+  }
+
+  private _ejecutarEliminarUsuario(u: Usuario): void {
 
     this.usuarioService.eliminar(u.id!).subscribe({
       next: () => {
@@ -390,11 +403,13 @@ export class GestionUsuarios implements OnInit {
 
   mostrarExito(msg: string): void {
     this.mensajeExito.set(msg);
+    this.toastService.exito(msg);
     setTimeout(() => this.mensajeExito.set(null), 3500);
   }
 
   mostrarError(msg: string): void {
     this.mensajeError.set(msg);
+    this.toastService.error(msg);
     setTimeout(() => this.mensajeError.set(null), 4000);
   }
 }

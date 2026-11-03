@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../../../shared/components/layout/navbar/navbar.component';
 import { SidebarTutorComponent } from '../../../../shared/components/layout/sidebar-tutor/sidebar-tutor.component';
 import { SolicitudService } from '../../../../core/services/solicitud.service';
+import { DialogService } from '../../../../core/services/dialog.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { DocenteService } from '../../../../core/services/docente.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Solicitud, EstadoSolicitud } from '../../../../shared/models/solicitud.model';
@@ -17,6 +19,8 @@ import { Docente } from '../../../../shared/models/docente.model';
 })
 export class Solicitudes implements OnInit {
   private solicitudService = inject(SolicitudService);
+  private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
   private docenteService = inject(DocenteService);
   private authService = inject(AuthService);
 
@@ -116,7 +120,16 @@ export class Solicitudes implements OnInit {
 
   aceptarSolicitud(s: Solicitud): void {
     const nombreEst = s.estudiante?.usuario?.nombre || s.estudiante?.nombre || 'el estudiante';
-    if (!confirm(`¿Aceptar la solicitud de ${nombreEst}?`)) return;
+    this.dialogService.confirmar({
+      titulo: 'Aceptar Solicitud',
+      mensaje: `¿Confirmas aceptar la solicitud de ${nombreEst}? El estudiante sera notificado.`,
+      tipo: 'confirmar',
+      textoBtnConfirmar: 'Si, Aceptar',
+      onConfirmar: () => this._doAceptarSolicitud(s)
+    });
+  }
+
+  private _doAceptarSolicitud(s: Solicitud): void {
 
     this.solicitudService.responder(s.id!, 'ACEPTADA').subscribe({
       next: () => {
@@ -156,11 +169,13 @@ export class Solicitudes implements OnInit {
 
   mostrarExito(msg: string): void {
     this.mensajeExito.set(msg);
+    this.toastService.exito(msg);
     setTimeout(() => this.mensajeExito.set(null), 3500);
   }
 
   mostrarError(msg: string): void {
     this.mensajeError.set(msg);
+    this.toastService.error(msg);
     setTimeout(() => this.mensajeError.set(null), 4000);
   }
 }

@@ -1,4 +1,4 @@
-<div class="flex h-[100dvh] w-full overflow-hidden bg-gray-50">
+<div class="flex h-[100dvh] w-full overflow-hidden bg-[#EEF2F6]">
   <app-sidebar></app-sidebar>
 
   <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
@@ -7,7 +7,7 @@
     <main class="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 md:pb-8 space-y-6">
 
       <!-- Header del Calendario -->
-      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="bg-white p-6 rounded-2xl border border-slate-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2 mb-1">
             <span class="px-2.5 py-0.5 rounded-full bg-[#DBF0DD] text-[#173831] text-[10px] font-bold uppercase tracking-wider">
@@ -52,10 +52,10 @@
         <!-- ═══════════════════════════════════════════════
              COLUMNA IZQUIERDA: Cuadrícula del Calendario (7 cols)
         ════════════════════════════════════════════════ -->
-        <div class="lg:col-span-7 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-300 shadow-sm p-5 space-y-4">
 
           <!-- Cabecera de Días de la Semana -->
-          <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] text-gray-400 uppercase tracking-wider pb-2 border-b border-gray-100">
+          <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] text-gray-400 uppercase tracking-wider pb-2 border-b border-slate-300">
             @for (diaNom of diasSemana; track diaNom) {
               <div>{{ diaNom }}</div>
             }
@@ -75,8 +75,8 @@
                   [class]="'min-h-[72px] sm:min-h-[82px] p-2 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ' +
                     (diaSeleccionado()?.fechaStr === dia.fechaStr
                       ? 'border-[#173831] bg-[#DBF0DD]/20 ring-2 ring-[#173831]/20 shadow-sm '
-                      : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50/70 ') +
-                    (!dia.esMesActual ? 'opacity-40 bg-gray-50/40 ' : 'bg-white ')">
+                      : 'border-slate-300 hover:border-slate-300 hover:bg-[#EEF2F6]/70 ') +
+                    (!dia.esMesActual ? 'opacity-40 bg-[#EEF2F6]/40 ' : 'bg-white ')">
 
                   <!-- Número de Día -->
                   <div class="flex items-center justify-between">
@@ -107,7 +107,7 @@
           }
 
           <!-- Leyenda de Estados -->
-          <div class="pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3 text-[10px] text-gray-500">
+          <div class="pt-3 border-t border-slate-300 flex flex-wrap items-center justify-between gap-3 text-[10px] text-gray-500">
             <div class="flex items-center gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
               <span>Días con tutorías</span>
@@ -127,10 +127,10 @@
         <!-- ═══════════════════════════════════════════════
              COLUMNA DERECHA: Detalle del Día Seleccionado (5 cols)
         ════════════════════════════════════════════════ -->
-        <div class="lg:col-span-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4 sticky top-6">
+        <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-300 shadow-sm p-5 space-y-4 sticky top-6">
 
           <!-- Encabezado de la fecha seleccionada -->
-          <div class="pb-3 border-b border-gray-100 flex items-center justify-between">
+          <div class="pb-3 border-b border-slate-300 flex items-center justify-between">
             <div>
               <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                 Detalle del Día
@@ -147,7 +147,7 @@
           <!-- Listado de Tutorías del Día Seleccionado -->
           @if (tutoriasDiaSeleccionado().length === 0) {
             <div class="py-16 text-center text-gray-400 text-xs space-y-2">
-              <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto text-gray-300">
+              <div class="w-12 h-12 rounded-full bg-[#EEF2F6] flex items-center justify-center mx-auto text-gray-300">
                 <span class="material-symbols-outlined text-2xl">event_busy</span>
               </div>
               <p class="font-semibold text-gray-500">No hay tutorías programadas este día.</p>
@@ -156,7 +156,7 @@
           } @else {
             <div class="space-y-3 max-h-[520px] overflow-y-auto pr-1">
               @for (t of tutoriasDiaSeleccionado(); track t.id) {
-                <div class="p-4 rounded-xl border border-gray-100 hover:border-[#8CB79B] bg-gray-50/40 hover:bg-[#DBF0DD]/10 transition-all space-y-2.5">
+                <div class="p-4 rounded-xl border border-slate-300 hover:border-[#8CB79B] bg-[#EEF2F6]/40 hover:bg-[#DBF0DD]/10 transition-all space-y-2.5">
 
                   <!-- Header de la sesión (Materia + Estado) -->
                   <div class="flex items-start justify-between gap-2">
@@ -198,7 +198,7 @@
                   </div>
 
                   <!-- Hora y Modalidad -->
-                  <div class="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-gray-100 text-gray-600">
+                  <div class="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-slate-300 text-gray-600">
                     <div class="flex items-center gap-1">
                       <span class="material-symbols-outlined text-xs text-gray-400">schedule</span>
                       <span>{{ t.hora }}</span>
@@ -217,7 +217,7 @@
 
                   <!-- Lugar o Enlace -->
                   @if (t.lugar) {
-                    <div class="p-2 rounded-lg bg-white border border-gray-100 text-[10px] text-gray-600 flex items-center gap-1.5">
+                    <div class="p-2 rounded-lg bg-white border border-slate-300 text-[10px] text-gray-600 flex items-center gap-1.5">
                       <span class="material-symbols-outlined text-xs text-gray-400">place</span>
                       <span class="truncate">{{ t.lugar }}</span>
                     </div>

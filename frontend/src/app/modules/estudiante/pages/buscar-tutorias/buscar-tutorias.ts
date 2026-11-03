@@ -8,6 +8,7 @@ import { MateriaService } from '../../../admin/services/materia.service';
 import { SolicitudService } from '../../../../core/services/solicitud.service';
 import { EstudianteService } from '../../../../core/services/estudiante.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { Tutoria } from '../../../../shared/models/tutoria.model';
 import { Materia } from '../../../../shared/models/materia.model';
 import { Solicitud } from '../../../../shared/models/solicitud.model';
@@ -25,6 +26,7 @@ export class BuscarTutorias implements OnInit {
   private estudianteService = inject(EstudianteService);
   private solicitudService = inject(SolicitudService);
   private authService = inject(AuthService);
+  private toastService = inject(ToastService);
 
   usuario = this.authService.usuario;
 
@@ -247,11 +249,13 @@ export class BuscarTutorias implements OnInit {
 
   mostrarExito(msg: string): void {
     this.mensajeExito.set(msg);
+    this.toastService.exito(msg);
     setTimeout(() => this.mensajeExito.set(null), 3500);
   }
 
   mostrarError(msg: string): void {
     this.mensajeError.set(msg);
+    this.toastService.error(msg);
     setTimeout(() => this.mensajeError.set(null), 4000);
   }
 }

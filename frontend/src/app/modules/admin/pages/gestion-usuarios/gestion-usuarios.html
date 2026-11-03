@@ -1,4 +1,4 @@
-<div class="flex h-[100dvh] w-full overflow-hidden bg-gray-50">
+<div class="flex h-[100dvh] w-full overflow-hidden bg-[#EEF2F6]">
   <app-sidebar></app-sidebar>
 
   <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
@@ -30,17 +30,17 @@
       </div>
 
       <!-- Barra de Filtros -->
-      <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-xs mb-6 flex flex-wrap gap-4 items-center">
+      <div class="bg-white p-4 rounded-xl border border-slate-300 shadow-sm mb-6 flex flex-wrap gap-4 items-center">
         <div class="relative flex-1 min-w-[200px]">
           <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
           <input type="text" [value]="busqueda()" (input)="onBuscar($event)" placeholder="Buscar por nombre, apellido o correo..."
-            class="w-full pl-9 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+            class="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831]">
         </div>
 
         <div class="flex items-center gap-2">
           <span class="text-xs font-semibold text-gray-600">Rol:</span>
           <select [value]="filtroRol()" (change)="onCambiarFiltroRol($event)"
-            class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#173831] bg-white">
+            class="text-xs border border-slate-300 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#173831] bg-white">
             <option value="TODOS">Todos los Roles</option>
             <option value="ADMINISTRADOR">Administradores</option>
             <option value="DOCENTE">Docentes</option>
@@ -51,7 +51,7 @@
         <div class="flex items-center gap-2">
           <span class="text-xs font-semibold text-gray-600">Estado:</span>
           <select [value]="filtroEstado()" (change)="onCambiarFiltroEstado($event)"
-            class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#173831] bg-white">
+            class="text-xs border border-slate-300 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#173831] bg-white">
             <option value="TODOS">Todos los Estados</option>
             <option value="ACTIVOS">Solo Activos</option>
             <option value="INACTIVOS">Solo Inactivos</option>
@@ -60,10 +60,10 @@
       </div>
 
       <!-- TABLA DE USUARIOS -->
-      <div class="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-300 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
-            <thead class="bg-gray-50 border-b border-gray-100 text-gray-500 uppercase tracking-wider font-semibold">
+            <thead class="bg-[#EEF2F6] border-b border-slate-300 text-gray-500 uppercase tracking-wider font-semibold">
               <tr>
                 <th class="px-6 py-3">Usuario</th>
                 <th class="px-6 py-3">Rol</th>
@@ -72,8 +72,8 @@
                 <th class="px-6 py-3 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100 text-gray-700">
-              <tr *ngFor="let u of usuariosFiltrados()" class="hover:bg-gray-50/50 transition-colors">
+            <tbody class="divide-y divide-slate-200 text-gray-700">
+              <tr *ngFor="let u of usuariosFiltrados()" class="hover:bg-[#EEF2F6]/50 transition-colors">
                 <td class="px-6 py-4">
                   <div class="font-semibold text-gray-900">{{ u.nombre }} {{ u.apellido }}</div>
                   <div class="text-[11px] text-gray-400">{{ u.correo }}</div>
@@ -120,8 +120,8 @@
 
 <!-- MODAL CREAR / EDITAR USUARIO -->
 <div *ngIf="modalAbierto()" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-  <div class="bg-white rounded-xl shadow-xl border border-gray-100 w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden">
-    <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between shrink-0">
+  <div class="bg-white rounded-xl shadow-xl border border-slate-300 w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden">
+    <div class="px-6 py-4 bg-[#EEF2F6] border-b border-slate-300 flex items-center justify-between shrink-0">
       <h3 class="font-bold text-sm text-[#051F20]">
         {{ editandoId() ? 'Editar Usuario y Perfil' : 'Nuevo Usuario Universitario' }}
       </h3>
@@ -136,12 +136,12 @@
         <div>
           <label class="block font-semibold text-gray-700 mb-1">Nombre *</label>
           <input type="text" formControlName="nombre" placeholder="Nombre(s)"
-            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831]">
         </div>
         <div>
           <label class="block font-semibold text-gray-700 mb-1">Apellido *</label>
           <input type="text" formControlName="apellido" placeholder="Apellido(s)"
-            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831]">
         </div>
       </div>
 
@@ -149,12 +149,12 @@
         <div>
           <label class="block font-semibold text-gray-700 mb-1">Correo Institucional *</label>
           <input type="email" formControlName="correo" placeholder="usuario@tutorias.com"
-            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831]">
         </div>
         <div>
           <label class="block font-semibold text-gray-700 mb-1">Teléfono</label>
           <input type="text" formControlName="telefono" placeholder="Ej: 3001234567"
-            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831]">
         </div>
       </div>
 
@@ -164,13 +164,13 @@
             {{ editandoId() ? 'Nueva Contraseña (dejar en blanco para conservar)' : 'Contraseña de Acceso *' }}
           </label>
           <input type="password" formControlName="password" placeholder="Mínimo 6 caracteres"
-            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831]">
         </div>
 
         <div>
           <label class="block font-semibold text-gray-700 mb-1">Rol en el Sistema *</label>
           <select formControlName="rol"
-            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
             <option value="ESTUDIANTE">Estudiante</option>
             <option value="DOCENTE">Docente</option>
             <option value="ADMINISTRADOR">Administrador</option>
@@ -189,12 +189,12 @@
           <div>
             <label class="block font-semibold text-gray-700 mb-1">Especialidad Académica</label>
             <input type="text" formControlName="especialidad" placeholder="Ej: Bases de Datos y Software"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
           </div>
           <div>
             <label class="block font-semibold text-gray-700 mb-1">Disponibilidad Habitual</label>
             <input type="text" formControlName="disponibilidad" placeholder="Ej: Lunes a Jueves 3:00 - 6:00 PM"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
           </div>
         </div>
 
@@ -203,8 +203,8 @@
           <label class="block font-semibold text-gray-700 mb-1.5">
             Seleccionar asignaturas que el docente está habilitado para impartir:
           </label>
-          <div class="max-h-40 overflow-y-auto p-2 bg-white rounded-lg border border-gray-200 space-y-1.5">
-            <div *ngFor="let m of materias()" class="flex items-center gap-2 p-1.5 hover:bg-gray-50 rounded cursor-pointer"
+          <div class="max-h-40 overflow-y-auto p-2 bg-white rounded-lg border border-slate-300 space-y-1.5">
+            <div *ngFor="let m of materias()" class="flex items-center gap-2 p-1.5 hover:bg-[#EEF2F6] rounded cursor-pointer"
                  (click)="toggleMateriaDocente(m.id!)">
               <input type="checkbox" [checked]="estaMateriaSeleccionada(m.id)" (click)="$event.stopPropagation()"
                 (change)="toggleMateriaDocente(m.id!)" class="rounded text-[#173831] focus:ring-[#173831]">
@@ -232,7 +232,7 @@
           <div>
             <label class="block font-semibold text-gray-700 mb-1">Facultad</label>
             <select formControlName="facultadId" (change)="onFacultadChange()"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
               <option value="" disabled>Seleccione facultad...</option>
               <option *ngFor="let f of facultades()" [value]="f.id">{{ f.nombre }} ({{ f.codigo }})</option>
             </select>
@@ -241,7 +241,7 @@
           <div>
             <label class="block font-semibold text-gray-700 mb-1">Programa / Carrera *</label>
             <select formControlName="programaId"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
               <option value="" disabled>
                 {{ !facultadSeleccionadaModal() ? 'Primero seleccione una facultad...' : (programasParaModal().length === 0 ? 'No hay carreras en esta facultad' : 'Seleccione programa de esta facultad...') }}
               </option>
@@ -257,7 +257,7 @@
           <div>
             <label class="block font-semibold text-gray-700 mb-1">Semestre Actual de Referencia</label>
             <select formControlName="semestreActual"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
               <option *ngFor="let s of [1,2,3,4,5,6,7,8,9,10]" [value]="s">Semestre {{ s }}</option>
             </select>
           </div>
@@ -265,14 +265,14 @@
           <div>
             <label class="block font-semibold text-gray-700 mb-1">Código Estudiantil</label>
             <input type="text" formControlName="codigoEstudiantil" placeholder="Ej: SIS-2024-001"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white uppercase">
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#173831] bg-white uppercase">
           </div>
         </div>
       </div>
 
       <div class="pt-2 flex items-center justify-end gap-2 shrink-0">
         <button type="button" (click)="cerrarModal()"
-          class="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 cursor-pointer">
+          class="px-4 py-2 border border-slate-300 text-gray-600 rounded-lg hover:bg-[#EEF2F6] cursor-pointer">
           Cancelar
         </button>
         <button type="submit"

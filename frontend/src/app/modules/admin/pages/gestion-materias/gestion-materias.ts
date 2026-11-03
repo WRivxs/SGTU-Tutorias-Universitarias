@@ -6,6 +6,8 @@ import { SidebarComponent } from '../../../../shared/components/layout/sidebar/s
 import { MateriaService } from '../../services/materia.service';
 import { FacultadService } from '../../../../core/services/facultad.service';
 import { ProgramaService } from '../../../../core/services/programa.service';
+import { DialogService } from '../../../../core/services/dialog.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { Materia } from '../../../../shared/models/materia.model';
 import { Facultad } from '../../../../shared/models/facultad.model';
 import { Programa } from '../../../../shared/models/programa.model';
@@ -20,6 +22,8 @@ export class GestionMaterias implements OnInit {
   private materiaService = inject(MateriaService);
   private facultadService = inject(FacultadService);
   private programaService = inject(ProgramaService);
+  private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
   private fb = inject(FormBuilder);
 
   materias = signal<Materia[]>([]);
@@ -197,24 +201,32 @@ export class GestionMaterias implements OnInit {
   }
 
   eliminarMateria(m: Materia): void {
-    if (!confirm(`¿Eliminar la materia ${m.nombre}?`)) return;
-
-    this.materiaService.eliminar(m.id!).subscribe({
-      next: () => {
-        this.mostrarExito('Materia eliminada con éxito');
-        this.cargarDatos();
-      },
-      error: () => this.mostrarError('Error al eliminar materia')
+    this.dialogService.confirmar({
+      titulo: 'Eliminar Asignatura',
+      mensaje: `¿Estás seguro de eliminar la asignatura "${m.nombre}"? Esta acción removerá la materia del catálogo académico.`,
+      tipo: 'peligro',
+      textoBotonConfirmar: 'Eliminar Asignatura',
+      accion: () => {
+        this.materiaService.eliminar(m.id!).subscribe({
+          next: () => {
+            this.mostrarExito('Asignatura eliminada con éxito');
+            this.cargarDatos();
+          },
+          error: (err) => this.mostrarError(err.error?.mensaje || 'Error al eliminar la asignatura')
+        });
+      }
     });
   }
 
   mostrarExito(msg: string): void {
     this.mensajeExito.set(msg);
+    this.toastService.exito(msg);
     setTimeout(() => this.mensajeExito.set(null), 3500);
   }
 
   mostrarError(msg: string): void {
     this.mensajeError.set(msg);
+    this.toastService.error(msg);
     setTimeout(() => this.mensajeError.set(null), 4000);
   }
 }

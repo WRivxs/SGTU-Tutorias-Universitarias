@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 import { NavbarComponent } from '../../../../shared/components/layout/navbar/navbar.component';
 import { SidebarEstudianteComponent } from '../../../../shared/components/layout/sidebar-estudiante/sidebar-estudiante.component';
 import { SolicitudService } from '../../../../core/services/solicitud.service';
+import { DialogService } from '../../../../core/services/dialog.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Solicitud } from '../../../../shared/models/solicitud.model';
 
@@ -15,6 +17,8 @@ import { Solicitud } from '../../../../shared/models/solicitud.model';
 })
 export class MisSolicitudes implements OnInit {
   private solicitudService = inject(SolicitudService);
+  private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
   private authService = inject(AuthService);
 
   usuario = this.authService.usuario;
@@ -65,9 +69,16 @@ export class MisSolicitudes implements OnInit {
   }
 
   cancelarSolicitud(s: Solicitud): void {
-    if (!confirm(`¿Estás seguro de cancelar tu solicitud para la tutoría de ${s.tutoria?.materia?.nombre}?`)) {
-      return;
-    }
+    this.dialogService.confirmar({
+      titulo: 'Cancelar Solicitud',
+      mensaje: `¿Cancelar tu solicitud para la tutoria de "${s.tutoria?.materia?.nombre}"? Podras volver a solicitarla.`,
+      tipo: 'peligro',
+      textoBtnConfirmar: 'Si, Cancelar',
+      onConfirmar: () => this._doCancelarSolicitud(s)
+    });
+  }
+
+  private _doCancelarSolicitud(s: Solicitud): void {
 
     this.solicitudService.eliminar(s.id!).subscribe({
       next: () => {
@@ -82,11 +93,13 @@ export class MisSolicitudes implements OnInit {
 
   mostrarExito(msg: string): void {
     this.mensajeExito.set(msg);
+    this.toastService.exito(msg);
     setTimeout(() => this.mensajeExito.set(null), 3500);
   }
 
   mostrarError(msg: string): void {
     this.mensajeError.set(msg);
+    this.toastService.error(msg);
     setTimeout(() => this.mensajeError.set(null), 4000);
   }
 }

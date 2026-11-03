@@ -5,6 +5,8 @@ import { NavbarComponent } from '../../../../shared/components/layout/navbar/nav
 import { SidebarComponent } from '../../../../shared/components/layout/sidebar/sidebar.component';
 import { FacultadService } from '../../../../core/services/facultad.service';
 import { ProgramaService } from '../../../../core/services/programa.service';
+import { DialogService } from '../../../../core/services/dialog.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { Facultad } from '../../../../shared/models/facultad.model';
 import { Programa } from '../../../../shared/models/programa.model';
 
@@ -17,6 +19,8 @@ import { Programa } from '../../../../shared/models/programa.model';
 export class GestionFacultadesProgramas implements OnInit {
   private facultadService = inject(FacultadService);
   private programaService = inject(ProgramaService);
+  private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
   private fb = inject(FormBuilder);
 
   pestanaActiva = signal<'FACULTADES' | 'PROGRAMAS'>('FACULTADES');
@@ -131,7 +135,16 @@ export class GestionFacultadesProgramas implements OnInit {
   }
 
   eliminarFacultad(f: Facultad): void {
-    if (!confirm(`¿Eliminar la facultad ${f.nombre}? (Nota: No debe tener programas asociados)`)) return;
+    this.dialogService.confirmar({
+      titulo: 'Eliminar Facultad',
+      mensaje: `¿Eliminar la facultad "${f.nombre}"? Solo si no tiene programas asociados.`,
+      tipo: 'peligro',
+      textoBtnConfirmar: 'Si, Eliminar',
+      onConfirmar: () => this._doEliminarFacultad(f)
+    });
+  }
+
+  private _doEliminarFacultad(f: Facultad): void {
     this.facultadService.eliminar(f.id!).subscribe({
       next: () => {
         this.mostrarExito('Facultad eliminada con éxito');
@@ -207,7 +220,16 @@ export class GestionFacultadesProgramas implements OnInit {
   }
 
   eliminarPrograma(p: Programa): void {
-    if (!confirm(`¿Eliminar el programa ${p.nombre}? (Nota: No debe tener materias ni estudiantes asociados)`)) return;
+    this.dialogService.confirmar({
+      titulo: 'Eliminar Programa',
+      mensaje: `¿Eliminar el programa "${p.nombre}"? Solo si no tiene materias ni estudiantes.`,
+      tipo: 'peligro',
+      textoBtnConfirmar: 'Si, Eliminar',
+      onConfirmar: () => this._doEliminarPrograma(p)
+    });
+  }
+
+  private _doEliminarPrograma(p: Programa): void {
     this.programaService.eliminar(p.id!).subscribe({
       next: () => {
         this.mostrarExito('Programa académico eliminado');
@@ -219,11 +241,13 @@ export class GestionFacultadesProgramas implements OnInit {
 
   mostrarExito(msg: string): void {
     this.mensajeExito.set(msg);
+    this.toastService.exito(msg);
     setTimeout(() => this.mensajeExito.set(null), 3500);
   }
 
   mostrarError(msg: string): void {
     this.mensajeError.set(msg);
+    this.toastService.error(msg);
     setTimeout(() => this.mensajeError.set(null), 4000);
   }
 }

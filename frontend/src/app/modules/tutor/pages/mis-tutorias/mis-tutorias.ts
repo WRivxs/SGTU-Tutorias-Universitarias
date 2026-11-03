@@ -4,6 +4,8 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { NavbarComponent } from '../../../../shared/components/layout/navbar/navbar.component';
 import { SidebarTutorComponent } from '../../../../shared/components/layout/sidebar-tutor/sidebar-tutor.component';
 import { TutoriaService } from '../../../../core/services/tutoria.service';
+import { DialogService } from '../../../../core/services/dialog.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { DocenteService } from '../../../../core/services/docente.service';
 import { SolicitudService } from '../../../../core/services/solicitud.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -21,6 +23,8 @@ import { Solicitud } from '../../../../shared/models/solicitud.model';
 })
 export class MisTutorias implements OnInit {
   private tutoriaService = inject(TutoriaService);
+  private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
   private docenteService = inject(DocenteService);
   private solicitudService = inject(SolicitudService);
   private authService = inject(AuthService);
@@ -256,7 +260,16 @@ export class MisTutorias implements OnInit {
   }
 
   eliminarTutoria(t: Tutoria): void {
-    if (!confirm(`¿Eliminar la tutoría de ${t.materia?.nombre}?`)) return;
+    this.dialogService.confirmar({
+      titulo: 'Eliminar Tutoria',
+      mensaje: `¿Eliminar la tutoria de "${t.materia?.nombre}"? Esta accion es permanente.`,
+      tipo: 'peligro',
+      textoBtnConfirmar: 'Si, Eliminar',
+      onConfirmar: () => this._doEliminarTutoria(t)
+    });
+  }
+
+  private _doEliminarTutoria(t: Tutoria): void {
 
     this.tutoriaService.eliminar(t.id!).subscribe({
       next: () => {
@@ -269,11 +282,13 @@ export class MisTutorias implements OnInit {
 
   mostrarExito(msg: string): void {
     this.mensajeExito.set(msg);
+    this.toastService.exito(msg);
     setTimeout(() => this.mensajeExito.set(null), 3500);
   }
 
   mostrarError(msg: string): void {
     this.mensajeError.set(msg);
+    this.toastService.error(msg);
     setTimeout(() => this.mensajeError.set(null), 4000);
   }
 }
