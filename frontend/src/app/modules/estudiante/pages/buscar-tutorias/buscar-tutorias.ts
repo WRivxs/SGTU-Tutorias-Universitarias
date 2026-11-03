@@ -51,6 +51,13 @@ export class BuscarTutorias implements OnInit {
   tutoriaSeleccionada = signal<Tutoria | null>(null);
   comentarioSolicitud = signal<string>('');
 
+  limpiarFiltros(): void {
+    this.busqueda.set('');
+    this.filtroSemestre.set('TODOS');
+    this.filtroMateria.set('TODAS');
+    this.filtroModalidad.set('TODAS');
+  }
+
   mensajeExito = signal<string | null>(null);
   mensajeError = signal<string | null>(null);
 
