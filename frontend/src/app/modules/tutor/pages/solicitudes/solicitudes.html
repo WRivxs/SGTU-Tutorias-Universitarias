@@ -199,7 +199,7 @@
 <!-- Modal Rechazar Solicitud -->
 @if (modalRechazoAbierto()) {
   <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-gray-100 animate-in fade-in duration-200">
+    <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-gray-100 animate-in fade-in duration-200 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-gray-100">
         <h2 class="text-base font-bold text-[#051F20]">Rechazar Solicitud</h2>
         <button (click)="cerrarModalRechazo()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">

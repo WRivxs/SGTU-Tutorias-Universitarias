@@ -174,7 +174,7 @@
 <!-- MODAL FACULTAD -->
 @if (modalFacultadAbierto()) {
   <div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-xl border border-gray-100 w-full max-w-md overflow-hidden">
+    <div class="bg-white rounded-xl shadow-xl border border-gray-100 w-full max-w-md max-h-[90vh] overflow-y-auto">
       <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
         <h3 class="font-bold text-sm text-[#051F20]">
           {{ editandoFacultadId() ? 'Editar Facultad' : 'Nueva Facultad' }}
@@ -219,7 +219,7 @@
 <!-- MODAL PROGRAMA -->
 @if (modalProgramaAbierto()) {
   <div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-xl border border-gray-100 w-full max-w-md overflow-hidden">
+    <div class="bg-white rounded-xl shadow-xl border border-gray-100 w-full max-w-md max-h-[90vh] overflow-y-auto">
       <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
         <h3 class="font-bold text-sm text-[#051F20]">
           {{ editandoProgramaId() ? 'Editar Programa Académico' : 'Nuevo Programa Académico' }}

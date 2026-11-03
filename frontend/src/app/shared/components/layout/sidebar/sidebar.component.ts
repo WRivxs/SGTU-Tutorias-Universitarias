@@ -2,79 +2,111 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+import { LayoutService } from '../../../../core/services/layout.service';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
-    <aside class="w-64 h-screen bg-[#051F20] text-white flex flex-col justify-between flex-shrink-0 select-none">
+    <!-- Fondo oscuro traslucido en moviles al abrir menu -->
+    @if (layoutService.sidebarAbierto()) {
+      <div
+        (click)="layoutService.cerrarSidebar()"
+        class="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-xs transition-opacity duration-300">
+      </div>
+    }
+
+    <!-- Sidebar deslizable en movil, fijo en pantallas medianas y grandes -->
+    <aside
+      [class.-translate-x-full]="!layoutService.sidebarAbierto()"
+      class="w-64 h-screen bg-[#051F20] text-white flex flex-col justify-between flex-shrink-0 select-none
+             fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out
+             md:static md:translate-x-0 md:z-auto">
       <div>
-        <!-- Marca SGTU -->
-        <div class="h-16 px-6 flex items-center gap-3 border-b border-white/5">
-          <div class="w-9 h-9 rounded-lg bg-[#173831] flex items-center justify-center text-[#8CB79B]">
-            <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1">school</span>
+        <!-- Marca SGTU con boton para cerrar en movil -->
+        <div class="h-16 px-6 flex items-center justify-between border-b border-white/5">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-[#173831] flex items-center justify-center text-[#8CB79B]">
+              <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1">school</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-bold text-sm tracking-tight text-white">SGTU Admin</span>
+              <span class="text-[10px] text-[#8CB79B] uppercase tracking-wider font-semibold">Portal Central</span>
+            </div>
           </div>
-          <div class="flex flex-col">
-            <span class="font-bold text-sm tracking-tight text-white">SGTU Admin</span>
-            <span class="text-[10px] text-[#8CB79B] uppercase tracking-wider font-semibold">Portal Central</span>
-          </div>
+
+          <!-- Boton X para cerrar en moviles -->
+          <button
+            type="button"
+            (click)="layoutService.cerrarSidebar()"
+            class="md:hidden text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+            aria-label="Cerrar menu">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
         </div>
 
-        <!-- Menú Principal -->
+        <!-- Menu Principal -->
         <div class="px-3 py-4">
           <div class="px-3 pb-2 text-[10px] uppercase tracking-wider text-[#8CB79B] font-semibold">
-            Menú Principal
+            Menu Principal
           </div>
           <nav class="flex flex-col gap-1">
             <a routerLink="/admin/dashboard" routerLinkActive="bg-[#173831] text-white font-semibold shadow-sm"
+               (click)="layoutService.cerrarSidebar()"
                class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-[#DBF0DD] hover:bg-[#173831] hover:text-white transition-colors cursor-pointer">
               <span class="material-symbols-outlined text-lg">grid_view</span>
               <span>Dashboard</span>
             </a>
 
             <a routerLink="/admin/usuarios" routerLinkActive="bg-[#173831] text-white font-semibold shadow-sm"
+               (click)="layoutService.cerrarSidebar()"
                class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-[#DBF0DD] hover:bg-[#173831] hover:text-white transition-colors cursor-pointer">
               <span class="material-symbols-outlined text-lg">group</span>
-              <span>Gestión de Usuarios</span>
+              <span>Gestion de Usuarios</span>
             </a>
 
             <a routerLink="/admin/facultades-programas" routerLinkActive="bg-[#173831] text-white font-semibold shadow-sm"
+               (click)="layoutService.cerrarSidebar()"
                class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-[#DBF0DD] hover:bg-[#173831] hover:text-white transition-colors cursor-pointer">
               <span class="material-symbols-outlined text-lg">domain</span>
               <span>Facultades y Carreras</span>
             </a>
 
             <a routerLink="/admin/materias" routerLinkActive="bg-[#173831] text-white font-semibold shadow-sm"
+               (click)="layoutService.cerrarSidebar()"
                class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-[#DBF0DD] hover:bg-[#173831] hover:text-white transition-colors cursor-pointer">
               <span class="material-symbols-outlined text-lg">menu_book</span>
-              <span>Gestión de Materias</span>
+              <span>Gestion de Materias</span>
             </a>
 
             <a routerLink="/admin/calendario" routerLinkActive="bg-[#173831] text-white font-semibold shadow-sm"
+               (click)="layoutService.cerrarSidebar()"
                class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-[#DBF0DD] hover:bg-[#173831] hover:text-white transition-colors cursor-pointer">
               <span class="material-symbols-outlined text-lg">calendar_month</span>
-              <span>Calendario de Tutorías</span>
+              <span>Calendario de Tutorias</span>
             </a>
           </nav>
         </div>
       </div>
 
-      <!-- Pie del Sidebar: Cerrar Sesión -->
+      <!-- Pie del Sidebar: Cerrar Sesion -->
       <div class="p-3 border-t border-white/5">
         <button (click)="logout()"
           class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-red-300 hover:bg-red-950/40 hover:text-red-200 transition-colors cursor-pointer">
           <span class="material-symbols-outlined text-lg">logout</span>
-          <span class="font-semibold">Cerrar Sesión</span>
+          <span class="font-semibold">Cerrar Sesion</span>
         </button>
       </div>
     </aside>
   `
 })
 export class SidebarComponent {
+  public layoutService = inject(LayoutService);
   private authService = inject(AuthService);
 
   logout(): void {
+    this.layoutService.cerrarSidebar();
     this.authService.logout();
   }
 }
