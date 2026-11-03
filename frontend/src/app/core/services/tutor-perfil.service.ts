@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Materia } from '../../shared/models/materia.model';
 
 export interface TutorPerfil {
   id?: number;
@@ -13,9 +14,11 @@ export interface TutorPerfil {
   especialidad?: string;
   descripcion?: string;
   disponibilidad?: string;
+  materias?: Materia[];
 }
 
-const API_URL = 'http://localhost:8080/api/tutores';
+// Actualizado a /api/docentes para sincronizar con el nuevo modelo relacional
+const API_URL = 'http://localhost:8080/api/docentes';
 
 @Injectable({ providedIn: 'root' })
 export class TutorPerfilService {

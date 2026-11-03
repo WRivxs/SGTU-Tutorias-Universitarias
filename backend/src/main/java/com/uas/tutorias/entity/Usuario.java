@@ -45,6 +45,9 @@ public class Usuario {
     @Column(nullable = false, length = 20)
     private Rol rol;
 
+    @Column(length = 25)
+    private String telefono;
+
     @Column(nullable = false)
     private Boolean estado = true;
 
@@ -57,6 +60,6 @@ public class Usuario {
     }
 
     public enum Rol {
-        ADMINISTRADOR, TUTOR, ESTUDIANTE
+        ADMINISTRADOR, DOCENTE, ESTUDIANTE
     }
 }

@@ -9,11 +9,12 @@ const API_URL = 'http://localhost:8080/api/solicitudes';
 export class SolicitudService {
   private http = inject(HttpClient);
 
-  listar(estudianteId?: number, tutoriaId?: number): Observable<Solicitud[]> {
+  listar(estudianteId?: number, tutoriaId?: number, docenteId?: number): Observable<Solicitud[]> {
     let url = API_URL;
     const params: string[] = [];
     if (estudianteId) params.push(`estudianteId=${estudianteId}`);
     if (tutoriaId) params.push(`tutoriaId=${tutoriaId}`);
+    if (docenteId) params.push(`docenteId=${docenteId}`);
     if (params.length > 0) {
       url += `?${params.join('&')}`;
     }

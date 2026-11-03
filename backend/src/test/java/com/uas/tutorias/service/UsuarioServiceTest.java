@@ -42,7 +42,7 @@ class UsuarioServiceTest {
         usuarioPrueba.setApellido("Rivas");
         usuarioPrueba.setCorreo("wadid@tutorias.com");
         usuarioPrueba.setPassword("claveSegura123");
-        usuarioPrueba.setRol(Usuario.Rol.TUTOR);
+        usuarioPrueba.setRol(Usuario.Rol.DOCENTE);
         usuarioPrueba.setEstado(true);
     }
 

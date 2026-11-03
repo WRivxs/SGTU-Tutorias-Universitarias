@@ -93,6 +93,32 @@
                 class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347]"></textarea>
             </div>
 
+            <!-- Asignaturas Autorizadas por la Administración (Corrección Profesor) -->
+            <div class="pt-3 border-t border-gray-100">
+              <label class="block text-[11px] font-bold text-[#051F20] mb-2 flex items-center justify-between">
+                <span>Asignaturas Autorizadas para Tutorías</span>
+                <span class="text-[10px] bg-[#DBF0DD] text-[#173831] px-2 py-0.5 rounded-full font-bold">
+                  {{ perfil()?.materias?.length || 0 }} autorizadas
+                </span>
+              </label>
+
+              @if (!perfil()?.materias || perfil()?.materias?.length === 0) {
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-800 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-sm text-amber-600">info</span>
+                  <span>No tienes asignaturas autorizadas por el administrador todavía.</span>
+                </div>
+              } @else {
+                <div class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1">
+                  @for (m of perfil()?.materias; track m.id) {
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#DBF0DD] text-[#173831]">
+                      <span class="material-symbols-outlined text-xs">book</span>
+                      <span>{{ m.nombre }} @if (m.semestre) { (Sem. {{ m.semestre }}°) }</span>
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+
             <div class="pt-2 flex justify-end">
               <button type="submit" [disabled]="guardando()"
                 class="px-5 py-2 rounded-xl text-xs font-semibold bg-[#173831] hover:bg-[#235347] text-white shadow-sm transition-colors cursor-pointer flex items-center gap-1.5">

@@ -1,14 +1,14 @@
 package com.uas.tutorias.service.impl;
 
+import com.uas.tutorias.entity.Estudiante;
 import com.uas.tutorias.entity.Solicitud;
 import com.uas.tutorias.entity.Tutoria;
-import com.uas.tutorias.entity.Usuario;
 import com.uas.tutorias.exception.BadRequestException;
 import com.uas.tutorias.exception.ConflictException;
 import com.uas.tutorias.exception.ResourceNotFoundException;
+import com.uas.tutorias.repository.EstudianteRepository;
 import com.uas.tutorias.repository.SolicitudRepository;
 import com.uas.tutorias.repository.TutoriaRepository;
-import com.uas.tutorias.repository.UsuarioRepository;
 import com.uas.tutorias.service.SolicitudService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ import java.util.List;
 public class SolicitudServiceImpl implements SolicitudService {
 
     private final SolicitudRepository solicitudRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final EstudianteRepository estudianteRepository;
     private final TutoriaRepository tutoriaRepository;
 
     @Override
@@ -34,6 +34,13 @@ public class SolicitudServiceImpl implements SolicitudService {
     @Override
     @Transactional(readOnly = true)
     public List<Solicitud> listarPorEstudiante(Long estudianteId) {
+        // Soporta buscar tanto por estudianteId directo como por usuarioId
+        Estudiante est = estudianteRepository.findById(estudianteId)
+                .or(() -> estudianteRepository.findByUsuarioId(estudianteId))
+                .orElse(null);
+        if (est != null) {
+            return solicitudRepository.findByEstudianteId(est.getId());
+        }
         return solicitudRepository.findByEstudianteId(estudianteId);
     }
 
@@ -41,6 +48,12 @@ public class SolicitudServiceImpl implements SolicitudService {
     @Transactional(readOnly = true)
     public List<Solicitud> listarPorTutoria(Long tutoriaId) {
         return solicitudRepository.findByTutoriaId(tutoriaId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Solicitud> listarPorDocente(Long docenteId) {
+        return solicitudRepository.findByDocenteIdOrDocenteUsuarioId(docenteId);
     }
 
     @Override
@@ -59,13 +72,10 @@ public class SolicitudServiceImpl implements SolicitudService {
             throw new BadRequestException("Debe indicar la tutoría que se desea solicitar");
         }
 
-        Long estudianteId = solicitud.getEstudiante().getId();
-        Usuario estudiante = usuarioRepository.findById(estudianteId)
-                .orElseThrow(() -> new ResourceNotFoundException("Estudiante no encontrado con id: " + estudianteId));
-
-        if (estudiante.getRol() != Usuario.Rol.ESTUDIANTE) {
-            throw new BadRequestException("El usuario solicitante debe tener el rol ESTUDIANTE. Rol actual: " + estudiante.getRol());
-        }
+        Long inputEstudianteId = solicitud.getEstudiante().getId();
+        Estudiante estudiante = estudianteRepository.findById(inputEstudianteId)
+                .or(() -> estudianteRepository.findByUsuarioId(inputEstudianteId))
+                .orElseThrow(() -> new ResourceNotFoundException("Estudiante no encontrado con id: " + inputEstudianteId));
 
         Long tutoriaId = solicitud.getTutoria().getId();
         Tutoria tutoria = tutoriaRepository.findById(tutoriaId)
@@ -75,7 +85,7 @@ public class SolicitudServiceImpl implements SolicitudService {
             throw new ConflictException("La tutoría no está disponible para solicitudes. Estado actual: " + tutoria.getEstado());
         }
 
-        if (solicitudRepository.existsByEstudianteIdAndTutoriaId(estudianteId, tutoriaId)) {
+        if (solicitudRepository.existsByEstudianteIdAndTutoriaId(estudiante.getId(), tutoriaId)) {
             throw new ConflictException("Ya has enviado una solicitud para esta tutoría.");
         }
 
@@ -115,7 +125,7 @@ public class SolicitudServiceImpl implements SolicitudService {
         }
         // En un modelo de tutorías grupales, aceptar o rechazar a un estudiante
         // confirma su asistencia individual sin bloquear ni cerrar la tutoría para los demás.
-        // El estado de la tutoría (DISPONIBLE/OCUPADA/FINALIZADA/CANCELADA) lo gestiona el tutor directamente.
+        // El estado de la tutoría (DISPONIBLE/OCUPADA/FINALIZADA/CANCELADA) lo gestiona el docente directamente.
     }
 
     @Override

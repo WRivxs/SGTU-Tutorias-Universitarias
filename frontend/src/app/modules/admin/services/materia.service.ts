@@ -9,9 +9,12 @@ const API_URL = 'http://localhost:8080/api/materias';
 export class MateriaService {
   private http = inject(HttpClient);
 
-  listar(estado?: boolean): Observable<Materia[]> {
-    const url = estado !== undefined ? `${API_URL}?estado=${estado}` : API_URL;
-    return this.http.get<Materia[]>(url);
+  listar(estado?: boolean, programaId?: number, semestre?: number): Observable<Materia[]> {
+    const params: any = {};
+    if (estado !== undefined) params.estado = estado;
+    if (programaId) params.programaId = programaId;
+    if (semestre) params.semestre = semestre;
+    return this.http.get<Materia[]>(API_URL, { params });
   }
 
   obtenerPorId(id: number): Observable<Materia> {

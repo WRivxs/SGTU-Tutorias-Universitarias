@@ -39,6 +39,12 @@ import { AuthService } from '../../../../core/services/auth.service';
               <span>Gestión de Usuarios</span>
             </a>
 
+            <a routerLink="/admin/facultades-programas" routerLinkActive="bg-[#173831] text-white font-semibold shadow-sm"
+               class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-[#DBF0DD] hover:bg-[#173831] hover:text-white transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-lg">domain</span>
+              <span>Facultades y Carreras</span>
+            </a>
+
             <a routerLink="/admin/materias" routerLinkActive="bg-[#173831] text-white font-semibold shadow-sm"
                class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-[#DBF0DD] hover:bg-[#173831] hover:text-white transition-colors cursor-pointer">
               <span class="material-symbols-outlined text-lg">menu_book</span>

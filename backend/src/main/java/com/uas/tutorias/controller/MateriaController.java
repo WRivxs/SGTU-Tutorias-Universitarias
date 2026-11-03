@@ -16,16 +16,25 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/materias")
 @RequiredArgsConstructor
-@Tag(name = "Materias", description = "Gestión del catálogo de asignaturas o materias")
+@Tag(name = "Materias", description = "Gestión del catálogo de asignaturas o materias por programa y semestre")
 public class MateriaController {
 
     private final MateriaService materiaService;
 
-    // GET /api/materias
-    @Operation(summary = "Listar materias", description = "Disponible para ADMINISTRADOR, TUTOR y ESTUDIANTE")
-    @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('TUTOR') or hasRole('ESTUDIANTE')")
+    // GET /api/materias?programaId=1&semestre=4
+    @Operation(summary = "Listar materias", description = "Disponible para ADMINISTRADOR, DOCENTE y ESTUDIANTE")
+    @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('DOCENTE') or hasRole('ESTUDIANTE')")
     @GetMapping
-    public ResponseEntity<List<Materia>> listar(@RequestParam(required = false) Boolean estado) {
+    public ResponseEntity<List<Materia>> listar(
+            @RequestParam(required = false) Boolean estado,
+            @RequestParam(required = false) Long programaId,
+            @RequestParam(required = false) Integer semestre) {
+        if (programaId != null && semestre != null) {
+            return ResponseEntity.ok(materiaService.listarPorProgramaYSemestre(programaId, semestre));
+        }
+        if (programaId != null) {
+            return ResponseEntity.ok(materiaService.listarPorPrograma(programaId));
+        }
         if (estado != null) {
             return ResponseEntity.ok(materiaService.listarPorEstado(estado));
         }
@@ -33,8 +42,8 @@ public class MateriaController {
     }
 
     // GET /api/materias/{id}
-    @Operation(summary = "Obtener materia por ID", description = "Disponible para ADMINISTRADOR, TUTOR y ESTUDIANTE")
-    @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('TUTOR') or hasRole('ESTUDIANTE')")
+    @Operation(summary = "Obtener materia por ID", description = "Disponible para todos los roles autenticados")
+    @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('DOCENTE') or hasRole('ESTUDIANTE')")
     @GetMapping("/{id}")
     public ResponseEntity<Materia> obtener(@PathVariable Long id) {
         return ResponseEntity.ok(materiaService.obtenerPorId(id));

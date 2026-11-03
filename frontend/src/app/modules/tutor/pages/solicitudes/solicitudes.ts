@@ -4,9 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../../../shared/components/layout/navbar/navbar.component';
 import { SidebarTutorComponent } from '../../../../shared/components/layout/sidebar-tutor/sidebar-tutor.component';
 import { SolicitudService } from '../../../../core/services/solicitud.service';
-import { TutorPerfilService } from '../../../../core/services/tutor-perfil.service';
+import { DocenteService } from '../../../../core/services/docente.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Solicitud, EstadoSolicitud } from '../../../../shared/models/solicitud.model';
+import { Docente } from '../../../../shared/models/docente.model';
 
 @Component({
   selector: 'app-solicitudes-tutor',
@@ -16,10 +17,12 @@ import { Solicitud, EstadoSolicitud } from '../../../../shared/models/solicitud.
 })
 export class Solicitudes implements OnInit {
   private solicitudService = inject(SolicitudService);
-  private tutorPerfilService = inject(TutorPerfilService);
+  private docenteService = inject(DocenteService);
   private authService = inject(AuthService);
 
   usuario = this.authService.usuario;
+  perfilDocente = signal<Docente | null>(null);
+
   solicitudes = signal<Solicitud[]>([]);
   cargando = signal<boolean>(true);
 
@@ -45,14 +48,59 @@ export class Solicitudes implements OnInit {
   });
 
   ngOnInit(): void {
-    this.cargarSolicitudes();
+    this.cargarDatosDocente();
   }
 
-  cargarSolicitudes(): void {
+  cargarDatosDocente(): void {
     this.cargando.set(true);
-    this.solicitudService.listar().subscribe({
+    const u = this.usuario();
+
+    if (u && u.id) {
+      this.docenteService.obtenerPorUsuarioId(u.id).subscribe({
+        next: (doc) => {
+          this.perfilDocente.set(doc);
+          this.cargarSolicitudes(doc.id);
+        },
+        error: () => {
+          this.docenteService.listar().subscribe({
+            next: (lista) => {
+              const doc = lista.find(d => d.usuario?.id === u.id || d.usuario?.correo === u.correo);
+              if (doc) {
+                this.perfilDocente.set(doc);
+                this.cargarSolicitudes(doc.id);
+              } else {
+                this.cargarSolicitudes();
+              }
+            },
+            error: () => this.cargarSolicitudes()
+          });
+        }
+      });
+    } else {
+      this.cargarSolicitudes();
+    }
+  }
+
+  cargarSolicitudes(docenteId?: number): void {
+    this.cargando.set(true);
+    const u = this.usuario();
+
+    this.solicitudService.listar(undefined, undefined, docenteId).subscribe({
       next: (data) => {
-        this.solicitudes.set(data);
+        // Filtro de seguridad estricto en frontend: solo mostrar solicitudes de tutorías pertenecientes a este docente
+        let delDocente = data;
+        if (u) {
+          delDocente = data.filter(s => {
+            const docenteTutoria = s.tutoria?.docente || s.tutoria?.tutor;
+            if (!docenteTutoria) return false;
+            return (
+              docenteTutoria.usuario?.id === u.id ||
+              docenteTutoria.usuario?.correo?.toLowerCase() === u.correo?.toLowerCase() ||
+              (docenteId && docenteTutoria.id === docenteId)
+            );
+          });
+        }
+        this.solicitudes.set(delDocente);
         this.cargando.set(false);
       },
       error: () => {
@@ -67,12 +115,13 @@ export class Solicitudes implements OnInit {
   }
 
   aceptarSolicitud(s: Solicitud): void {
-    if (!confirm(`¿Aceptar la solicitud de ${s.estudiante?.nombre || 'el estudiante'}?`)) return;
+    const nombreEst = s.estudiante?.usuario?.nombre || s.estudiante?.nombre || 'el estudiante';
+    if (!confirm(`¿Aceptar la solicitud de ${nombreEst}?`)) return;
 
     this.solicitudService.responder(s.id!, 'ACEPTADA').subscribe({
       next: () => {
         this.mostrarExito('Solicitud ACEPTADA. La tutoría ha sido confirmada.');
-        this.cargarSolicitudes();
+        this.cargarSolicitudes(this.perfilDocente()?.id);
       },
       error: (err) => this.mostrarError(err.error?.mensaje || 'Error al aceptar solicitud')
     });
@@ -99,7 +148,7 @@ export class Solicitudes implements OnInit {
       next: () => {
         this.mostrarExito('Solicitud rechazada.');
         this.cerrarModalRechazo();
-        this.cargarSolicitudes();
+        this.cargarSolicitudes(this.perfilDocente()?.id);
       },
       error: (err) => this.mostrarError(err.error?.mensaje || 'Error al rechazar solicitud')
     });

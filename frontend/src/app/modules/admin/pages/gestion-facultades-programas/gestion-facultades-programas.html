@@ -1,0 +1,275 @@
+<div class="flex h-screen overflow-hidden bg-gray-50">
+  <app-sidebar></app-sidebar>
+
+  <div class="flex-1 flex flex-col min-w-0">
+    <app-navbar></app-navbar>
+
+    <main class="flex-1 overflow-y-auto p-6 md:p-8">
+      <!-- Encabezado y Pestañas -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-[#051F20] tracking-tight">Estructura Académica Universitaria</h1>
+          <p class="text-sm text-gray-500 mt-1">Gestión de Facultades y Carreras (Programas) según la jerarquía institucional</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Botón de acción contextual según la pestaña -->
+          @if (pestanaActiva() === 'FACULTADES') {
+            <button (click)="abrirModalFacultadNuevo()"
+              class="flex items-center gap-2 px-4 py-2 bg-[#173831] hover:bg-[#235347] text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-sm">add</span>
+              <span>Nueva Facultad</span>
+            </button>
+          }
+
+          @if (pestanaActiva() === 'PROGRAMAS') {
+            <button (click)="abrirModalProgramaNuevo()"
+              class="flex items-center gap-2 px-4 py-2 bg-[#173831] hover:bg-[#235347] text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-sm">add</span>
+              <span>Nuevo Programa</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Notificaciones -->
+      @if (mensajeExito()) {
+        <div class="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">check_circle</span>
+          <span>{{ mensajeExito() }}</span>
+        </div>
+      }
+      @if (mensajeError()) {
+        <div class="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">error</span>
+          <span>{{ mensajeError() }}</span>
+        </div>
+      }
+
+      <!-- Barra de Pestañas -->
+      <div class="flex border-b border-gray-200 mb-6 gap-6">
+        <button (click)="cambiarPestana('FACULTADES')"
+          [class.border-[#173831]]="pestanaActiva() === 'FACULTADES'"
+          [class.text-[#173831]]="pestanaActiva() === 'FACULTADES'"
+          [class.font-bold]="pestanaActiva() === 'FACULTADES'"
+          class="pb-3 text-sm text-gray-500 hover:text-gray-700 border-b-2 border-transparent transition-colors cursor-pointer flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg">domain</span>
+          <span>Facultades ({{ facultades().length }})</span>
+        </button>
+
+        <button (click)="cambiarPestana('PROGRAMAS')"
+          [class.border-[#173831]]="pestanaActiva() === 'PROGRAMAS'"
+          [class.text-[#173831]]="pestanaActiva() === 'PROGRAMAS'"
+          [class.font-bold]="pestanaActiva() === 'PROGRAMAS'"
+          class="pb-3 text-sm text-gray-500 hover:text-gray-700 border-b-2 border-transparent transition-colors cursor-pointer flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg">account_tree</span>
+          <span>Programas Académicos ({{ programas().length }})</span>
+        </button>
+      </div>
+
+      <!-- TABLA 1: FACULTADES -->
+      @if (pestanaActiva() === 'FACULTADES') {
+        <div class="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-gray-50 border-b border-gray-100 text-gray-500 uppercase tracking-wider font-semibold">
+                <tr>
+                  <th class="px-6 py-3">Código</th>
+                  <th class="px-6 py-3">Nombre de Facultad</th>
+                  <th class="px-6 py-3">Descripción</th>
+                  <th class="px-6 py-3">Estado</th>
+                  <th class="px-6 py-3 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 text-gray-700">
+                @for (f of facultades(); track f.id) {
+                  <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="px-6 py-4 font-mono font-bold text-[#173831]">{{ f.codigo }}</td>
+                    <td class="px-6 py-4 font-semibold text-gray-900">{{ f.nombre }}</td>
+                    <td class="px-6 py-4 text-gray-500">{{ f.descripcion || '—' }}</td>
+                    <td class="px-6 py-4">
+                      <span [class.bg-emerald-50]="f.estado" [class.text-emerald-700]="f.estado"
+                            [class.bg-gray-100]="!f.estado" [class.text-gray-600]="!f.estado"
+                            class="px-2.5 py-1 rounded-full text-[11px] font-semibold inline-block">
+                        {{ f.estado ? 'Activa' : 'Inactiva' }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-right space-x-2">
+                      <button (click)="abrirModalFacultadEditar(f)" class="p-1.5 text-gray-400 hover:text-[#173831] hover:bg-gray-100 rounded-md transition-colors cursor-pointer" title="Editar">
+                        <span class="material-symbols-outlined text-base">edit</span>
+                      </button>
+                      <button (click)="eliminarFacultad(f)" class="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer" title="Eliminar">
+                        <span class="material-symbols-outlined text-base">delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                }
+                @if (facultades().length === 0) {
+                  <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-400">No hay facultades registradas en el sistema.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- TABLA 2: PROGRAMAS -->
+      @if (pestanaActiva() === 'PROGRAMAS') {
+        <div class="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-gray-50 border-b border-gray-100 text-gray-500 uppercase tracking-wider font-semibold">
+                <tr>
+                  <th class="px-6 py-3">Código</th>
+                  <th class="px-6 py-3">Programa / Carrera</th>
+                  <th class="px-6 py-3">Facultad Perteneciente</th>
+                  <th class="px-6 py-3">Estado</th>
+                  <th class="px-6 py-3 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 text-gray-700">
+                @for (p of programas(); track p.id) {
+                  <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="px-6 py-4 font-mono font-bold text-[#173831]">{{ p.codigo }}</td>
+                    <td class="px-6 py-4 font-semibold text-gray-900">{{ p.nombre }}</td>
+                    <td class="px-6 py-4 text-gray-600 font-medium">
+                      <span class="inline-flex items-center gap-1.5 bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-[11px]">
+                        <span class="material-symbols-outlined text-xs">domain</span>
+                        {{ p.facultad?.nombre || 'Sin Facultad' }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4">
+                      <span [class.bg-emerald-50]="p.estado" [class.text-emerald-700]="p.estado"
+                            [class.bg-gray-100]="!p.estado" [class.text-gray-600]="!p.estado"
+                            class="px-2.5 py-1 rounded-full text-[11px] font-semibold inline-block">
+                        {{ p.estado ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-right space-x-2">
+                      <button (click)="abrirModalProgramaEditar(p)" class="p-1.5 text-gray-400 hover:text-[#173831] hover:bg-gray-100 rounded-md transition-colors cursor-pointer" title="Editar">
+                        <span class="material-symbols-outlined text-base">edit</span>
+                      </button>
+                      <button (click)="eliminarPrograma(p)" class="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer" title="Eliminar">
+                        <span class="material-symbols-outlined text-base">delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                }
+                @if (programas().length === 0) {
+                  <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-400">No hay programas académicos registrados.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </main>
+  </div>
+</div>
+
+<!-- MODAL FACULTAD -->
+@if (modalFacultadAbierto()) {
+  <div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl border border-gray-100 w-full max-w-md overflow-hidden">
+      <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+        <h3 class="font-bold text-sm text-[#051F20]">
+          {{ editandoFacultadId() ? 'Editar Facultad' : 'Nueva Facultad' }}
+        </h3>
+        <button (click)="cerrarModalFacultad()" class="text-gray-400 hover:text-gray-600 cursor-pointer">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="formFacultad" (ngSubmit)="guardarFacultad()" class="p-6 space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Nombre de la Facultad *</label>
+          <input type="text" formControlName="nombre" placeholder="Ej: Facultad de Ingeniería"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+        </div>
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Código Oficial *</label>
+          <input type="text" formControlName="codigo" placeholder="Ej: FAC-ING"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] uppercase">
+        </div>
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Descripción</label>
+          <textarea formControlName="descripcion" rows="2" placeholder="Breve descripción de las disciplinas"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]"></textarea>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-2">
+          <button type="button" (click)="cerrarModalFacultad()"
+            class="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 cursor-pointer">
+            Cancelar
+          </button>
+          <button type="submit"
+            class="px-4 py-2 bg-[#173831] hover:bg-[#235347] text-white font-semibold rounded-lg shadow-sm cursor-pointer">
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- MODAL PROGRAMA -->
+@if (modalProgramaAbierto()) {
+  <div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl border border-gray-100 w-full max-w-md overflow-hidden">
+      <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+        <h3 class="font-bold text-sm text-[#051F20]">
+          {{ editandoProgramaId() ? 'Editar Programa Académico' : 'Nuevo Programa Académico' }}
+        </h3>
+        <button (click)="cerrarModalPrograma()" class="text-gray-400 hover:text-gray-600 cursor-pointer">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="formPrograma" (ngSubmit)="guardarPrograma()" class="p-6 space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Facultad Perteneciente *</label>
+          <select formControlName="facultadId"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+            <option value="" disabled>Seleccione una facultad...</option>
+            @for (f of facultades(); track f.id) {
+              <option [value]="f.id">{{ f.nombre }} ({{ f.codigo }})</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Nombre del Programa / Carrera *</label>
+          <input type="text" formControlName="nombre" placeholder="Ej: Ingeniería de Sistemas"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Código del Programa *</label>
+          <input type="text" formControlName="codigo" placeholder="Ej: PROG-SIS"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] uppercase">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Descripción</label>
+          <textarea formControlName="descripcion" rows="2" placeholder="Perfil profesional o enfoque"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]"></textarea>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-2">
+          <button type="button" (click)="cerrarModalPrograma()"
+            class="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 cursor-pointer">
+            Cancelar
+          </button>
+          <button type="submit"
+            class="px-4 py-2 bg-[#173831] hover:bg-[#235347] text-white font-semibold rounded-lg shadow-sm cursor-pointer">
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

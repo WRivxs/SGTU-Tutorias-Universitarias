@@ -1,313 +1,285 @@
-<div class="flex h-screen w-full overflow-hidden bg-gray-50">
+<div class="flex h-screen overflow-hidden bg-gray-50">
   <app-sidebar></app-sidebar>
 
-  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+  <div class="flex-1 flex flex-col min-w-0">
     <app-navbar></app-navbar>
 
-    <main class="flex-1 overflow-y-auto p-6 space-y-6">
-
-      <!-- Alertas Feedback Visual -->
-      @if (mensajeExito()) {
-        <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
-          <span class="material-symbols-outlined text-emerald-600 text-lg">check_circle</span>
-          <span>{{ mensajeExito() }}</span>
-        </div>
-      }
-
-      @if (mensajeError()) {
-        <div class="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-center gap-2">
-          <span class="material-symbols-outlined text-red-600 text-lg">error</span>
-          <span>{{ mensajeError() }}</span>
-        </div>
-      }
-
-      <!-- Encabezado de Sección -->
-      <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <main class="flex-1 overflow-y-auto p-6 md:p-8">
+      <!-- Encabezado -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
-          <h1 class="text-xl font-bold text-[#051F20]">Gestión de Usuarios</h1>
-          <p class="text-xs text-gray-500 mt-0.5">
-            Administración centralizada de cuentas de estudiantes, docentes tutores y administradores.
-          </p>
+          <h1 class="text-2xl font-bold text-[#051F20] tracking-tight">Gestión Integral de Usuarios</h1>
+          <p class="text-sm text-gray-500 mt-1">Administración de credenciales, roles docentes (con materias asignadas) y perfiles estudiantiles</p>
         </div>
+
         <button (click)="abrirModalNuevo()"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-[#173831] hover:bg-[#235347] text-white text-xs font-semibold rounded-xl shadow-sm transition-colors cursor-pointer">
-          <span class="material-symbols-outlined text-base">person_add</span>
-          <span>+ Nuevo Usuario</span>
+          class="flex items-center gap-2 px-4 py-2 bg-[#173831] hover:bg-[#235347] text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-sm">person_add</span>
+          <span>Nuevo Usuario</span>
         </button>
       </div>
 
-      <!-- Barra de Filtros y Búsqueda -->
-      <div class="bg-white p-3.5 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center gap-3">
-        <!-- Input de búsqueda -->
-        <div class="relative flex-1 w-full">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
-          <input type="text" (input)="onBuscar($event)"
-                 placeholder="Buscar por nombre, apellido o correo..."
-                 class="w-full pl-9 pr-4 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347] focus:ring-1 focus:ring-[#8CB79B]" />
-        </div>
-
-        <!-- Filtro por Rol -->
-        <select (change)="onCambiarFiltroRol($event)"
-                class="w-full sm:w-44 px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-[#235347]">
-          <option value="TODOS">Todos los roles</option>
-          <option value="ADMINISTRADOR">Administradores</option>
-          <option value="TUTOR">Tutores</option>
-          <option value="ESTUDIANTE">Estudiantes</option>
-        </select>
-
-        <!-- Filtro por Estado -->
-        <select (change)="onCambiarFiltroEstado($event)"
-                class="w-full sm:w-36 px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-[#235347]">
-          <option value="TODOS">Todos los estados</option>
-          <option value="ACTIVOS">Solo Activos</option>
-          <option value="INACTIVOS">Solo Inactivos</option>
-        </select>
+      <!-- Notificaciones -->
+      <div *ngIf="mensajeExito()" class="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm">check_circle</span>
+        <span>{{ mensajeExito() }}</span>
+      </div>
+      <div *ngIf="mensajeError()" class="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm">error</span>
+        <span>{{ mensajeError() }}</span>
       </div>
 
-      <!-- Tabla de Usuarios -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <!-- Barra de Filtros -->
+      <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-xs mb-6 flex flex-wrap gap-4 items-center">
+        <div class="relative flex-1 min-w-[200px]">
+          <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+          <input type="text" [value]="busqueda()" (input)="onBuscar($event)" placeholder="Buscar por nombre, apellido o correo..."
+            class="w-full pl-9 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-gray-600">Rol:</span>
+          <select [value]="filtroRol()" (change)="onCambiarFiltroRol($event)"
+            class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#173831] bg-white">
+            <option value="TODOS">Todos los Roles</option>
+            <option value="ADMINISTRADOR">Administradores</option>
+            <option value="DOCENTE">Docentes</option>
+            <option value="ESTUDIANTE">Estudiantes</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-gray-600">Estado:</span>
+          <select [value]="filtroEstado()" (change)="onCambiarFiltroEstado($event)"
+            class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#173831] bg-white">
+            <option value="TODOS">Todos los Estados</option>
+            <option value="ACTIVOS">Solo Activos</option>
+            <option value="INACTIVOS">Solo Inactivos</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TABLA DE USUARIOS -->
+      <div class="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
-            <thead>
-              <tr class="bg-gray-50/70 border-b border-gray-100 text-gray-500 font-semibold uppercase tracking-wider text-[10px]">
-                <th class="py-3 px-4">Usuario</th>
-                <th class="py-3 px-4">Correo Institucional</th>
-                <th class="py-3 px-4">Rol / Especialidad</th>
-                <th class="py-3 px-4">Estado</th>
-                <th class="py-3 px-4 text-right">Acciones</th>
+            <thead class="bg-gray-50 border-b border-gray-100 text-gray-500 uppercase tracking-wider font-semibold">
+              <tr>
+                <th class="px-6 py-3">Usuario</th>
+                <th class="px-6 py-3">Rol</th>
+                <th class="px-6 py-3">Datos Académicos / Especialidad</th>
+                <th class="px-6 py-3">Estado</th>
+                <th class="px-6 py-3 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
-              @if (cargando()) {
-                <tr>
-                  <td colspan="5" class="py-12 text-center text-gray-400">
-                    <div class="flex items-center justify-center gap-2">
-                      <span class="material-symbols-outlined animate-spin">progress_activity</span>
-                      <span>Cargando usuarios...</span>
-                    </div>
-                  </td>
-                </tr>
-              } @else if (usuariosFiltrados().length === 0) {
-                <tr>
-                  <td colspan="5" class="py-12 text-center text-gray-400">
-                    No se encontraron usuarios registrados con los filtros aplicados.
-                  </td>
-                </tr>
-              } @else {
-                @for (u of usuariosFiltrados(); track u.id) {
-                  <tr class="hover:bg-gray-50/50 transition-colors">
-                    <!-- Nombre y avatar -->
-                    <td class="py-2.5 px-4">
-                      <div class="flex items-center gap-2.5">
-                        <div class="w-7 h-7 rounded-full bg-[#DBF0DD] text-[#173831] font-bold flex items-center justify-center text-[11px]">
-                          {{ u.nombre.charAt(0) }}{{ u.apellido.charAt(0) }}
-                        </div>
-                        <div>
-                          <div class="font-bold text-[#051F20] text-xs">{{ u.nombre }} {{ u.apellido }}</div>
-                          <div class="text-[9px] text-gray-400">ID: #{{ u.id }}</div>
-                        </div>
-                      </div>
-                    </td>
-
-                    <!-- Correo -->
-                    <td class="py-2.5 px-4 text-gray-600 font-mono text-[11px]">{{ u.correo }}</td>
-
-                    <!-- Rol y Especialidad (si es tutor) -->
-                    <td class="py-2.5 px-4">
-                      <div class="flex flex-col items-start gap-0.5">
-                        @if (u.rol === 'ADMINISTRADOR') {
-                          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#173831] text-white">ADMINISTRADOR</span>
-                        } @else if (u.rol === 'TUTOR') {
-                          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">TUTOR</span>
-                          @if (obtenerEspecialidadTutor(u.id)) {
-                            <span class="text-[10px] text-gray-500 font-semibold flex items-center gap-1">
-                              <span class="material-symbols-outlined text-[10px] text-emerald-600">school</span>
-                              {{ obtenerEspecialidadTutor(u.id) }}
-                            </span>
-                          }
-                        } @else {
-                          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-700">ESTUDIANTE</span>
-                        }
-                      </div>
-                    </td>
-
-                    <!-- Estado -->
-                    <td class="py-2.5 px-4">
-                      @if (u.estado) {
-                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Activo
-                        </span>
-                      } @else {
-                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-400">
-                          <span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span> Inactivo
-                        </span>
-                      }
-                    </td>
-
-                    <!-- Acciones -->
-                    <td class="py-2.5 px-4 text-right">
-                      <div class="inline-flex items-center gap-1">
-
-                        <!-- Toggle Estado -->
-                        <button (click)="toggleEstado(u)"
-                          title="{{ u.estado ? 'Desactivar usuario' : 'Activar usuario' }}"
-                          class="p-1 text-gray-400 hover:text-[#173831] hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
-                          <span class="material-symbols-outlined text-base">{{ u.estado ? 'toggle_on' : 'toggle_off' }}</span>
-                        </button>
-
-                        <!-- Editar -->
-                        <button (click)="abrirModalEditar(u)"
-                          title="Editar usuario"
-                          class="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer">
-                          <span class="material-symbols-outlined text-base">edit</span>
-                        </button>
-
-                        <!-- Eliminar -->
-                        <button (click)="eliminarUsuario(u)"
-                          title="Eliminar usuario"
-                          class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
-                          <span class="material-symbols-outlined text-base">delete</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              }
+            <tbody class="divide-y divide-gray-100 text-gray-700">
+              <tr *ngFor="let u of usuariosFiltrados()" class="hover:bg-gray-50/50 transition-colors">
+                <td class="px-6 py-4">
+                  <div class="font-semibold text-gray-900">{{ u.nombre }} {{ u.apellido }}</div>
+                  <div class="text-[11px] text-gray-400">{{ u.correo }}</div>
+                </td>
+                <td class="px-6 py-4">
+                  <span [ngClass]="{
+                    'bg-purple-50 text-purple-700': u.rol === 'ADMINISTRADOR',
+                    'bg-blue-50 text-blue-700': u.rol === 'DOCENTE' || u.rol === 'TUTOR',
+                    'bg-emerald-50 text-emerald-700': u.rol === 'ESTUDIANTE'
+                  }" class="px-2.5 py-1 rounded-full text-[11px] font-semibold inline-block">
+                    {{ u.rol === 'TUTOR' ? 'DOCENTE' : u.rol }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-gray-600 font-medium">
+                  {{ obtenerDetalleRol(u) }}
+                </td>
+                <td class="px-6 py-4">
+                  <button (click)="toggleEstado(u)"
+                    [class.bg-emerald-50]="u.estado" [class.text-emerald-700]="u.estado"
+                    [class.bg-gray-100]="!u.estado" [class.text-gray-600]="!u.estado"
+                    class="px-2.5 py-1 rounded-full text-[11px] font-semibold inline-block cursor-pointer hover:opacity-80 transition-opacity">
+                    {{ u.estado ? 'Activo' : 'Inactivo' }}
+                  </button>
+                </td>
+                <td class="px-6 py-4 text-right space-x-2">
+                  <button (click)="abrirModalEditar(u)" class="p-1.5 text-gray-400 hover:text-[#173831] hover:bg-gray-100 rounded-md transition-colors cursor-pointer" title="Editar">
+                    <span class="material-symbols-outlined text-base">edit</span>
+                  </button>
+                  <button (click)="eliminarUsuario(u)" class="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer" title="Eliminar">
+                    <span class="material-symbols-outlined text-base">delete</span>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="usuariosFiltrados().length === 0">
+                <td colspan="5" class="px-6 py-8 text-center text-gray-400">No se encontraron usuarios coincidentes.</td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
-
     </main>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     MODAL DE CREAR / EDITAR USUARIO (COMPACTO)
-════════════════════════════════════════════════ -->
-@if (modalAbierto()) {
-  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-3">
-    <div class="bg-white rounded-2xl w-full max-w-md max-h-[88vh] flex flex-col shadow-2xl border border-gray-100 animate-in fade-in duration-150">
+<!-- MODAL CREAR / EDITAR USUARIO -->
+<div *ngIf="modalAbierto()" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-xl border border-gray-100 w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden">
+    <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between shrink-0">
+      <h3 class="font-bold text-sm text-[#051F20]">
+        {{ editandoId() ? 'Editar Usuario y Perfil' : 'Nuevo Usuario Universitario' }}
+      </h3>
+      <button (click)="cerrarModal()" class="text-gray-400 hover:text-gray-600 cursor-pointer">
+        <span class="material-symbols-outlined text-lg">close</span>
+      </button>
+    </div>
 
-      <!-- Modal Header (Fijo) -->
-      <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 flex-shrink-0">
+    <form [formGroup]="form" (ngSubmit)="guardarUsuario()" class="p-6 space-y-4 text-xs overflow-y-auto flex-1">
+      <!-- 1. DATOS PERSONALES -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <h2 class="text-sm font-bold text-[#051F20]">
-            {{ editandoId() ? 'Editar Usuario' : 'Nuevo Usuario' }}
-          </h2>
-          <p class="text-[11px] text-gray-500">Datos del usuario institucional.</p>
+          <label class="block font-semibold text-gray-700 mb-1">Nombre *</label>
+          <input type="text" formControlName="nombre" placeholder="Nombre(s)"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
         </div>
-        <button (click)="cerrarModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg cursor-pointer">
-          <span class="material-symbols-outlined text-base">close</span>
-        </button>
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Apellido *</label>
+          <input type="text" formControlName="apellido" placeholder="Apellido(s)"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+        </div>
       </div>
 
-      <!-- Formulario con Scroll Interno si es necesario -->
-      <form [formGroup]="form" (ngSubmit)="guardarUsuario()" class="flex-1 overflow-y-auto px-5 py-3 space-y-3">
-
-        <div class="grid grid-cols-2 gap-2.5">
-          <!-- Nombre -->
-          <div class="space-y-0.5">
-            <label class="block text-[10px] font-bold text-[#051F20]">Nombre</label>
-            <input type="text" formControlName="nombre" placeholder="Juan"
-              class="w-full px-2.5 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#235347]" />
-            @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
-              <p class="text-[9px] text-red-500">Mínimo 2 letras.</p>
-            }
-          </div>
-
-          <!-- Apellido -->
-          <div class="space-y-0.5">
-            <label class="block text-[10px] font-bold text-[#051F20]">Apellido</label>
-            <input type="text" formControlName="apellido" placeholder="Pérez"
-              class="w-full px-2.5 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#235347]" />
-            @if (form.get('apellido')?.invalid && form.get('apellido')?.touched) {
-              <p class="text-[9px] text-red-500">Requerido.</p>
-            }
-          </div>
-        </div>
-
-        <!-- Correo -->
-        <div class="space-y-0.5">
-          <label class="block text-[10px] font-bold text-[#051F20]">Correo Institucional</label>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Correo Institucional *</label>
           <input type="email" formControlName="correo" placeholder="usuario@tutorias.com"
-            class="w-full px-2.5 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#235347]" />
-          @if (form.get('correo')?.invalid && form.get('correo')?.touched) {
-            <p class="text-[9px] text-red-500">Correo institucional no válido.</p>
-          }
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+        </div>
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Teléfono</label>
+          <input type="text" formControlName="telefono" placeholder="Ej: 3001234567"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">
+            {{ editandoId() ? 'Nueva Contraseña (dejar en blanco para conservar)' : 'Contraseña de Acceso *' }}
+          </label>
+          <input type="password" formControlName="password" placeholder="Mínimo 6 caracteres"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
         </div>
 
-        <!-- Contraseña -->
-        <div class="space-y-0.5">
-          <div class="flex items-center justify-between">
-            <label class="block text-[10px] font-bold text-[#051F20]">
-              {{ editandoId() ? 'Restablecer Contraseña (Opcional)' : 'Contraseña' }}
-            </label>
-            @if (editandoId()) {
-              <span class="text-[9px] text-gray-400">Dejar vacía para no cambiar</span>
-            }
-          </div>
-          <div class="relative">
-            <input [type]="mostrarPassword() ? 'text' : 'password'"
-                   formControlName="password"
-                   placeholder="{{ editandoId() ? '•••••••• (sin cambios)' : 'Mínimo 6 caracteres' }}"
-                   class="w-full pl-2.5 pr-8 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#235347]" />
-            <button type="button" (click)="toggleMostrarPassword()"
-                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
-              <span class="material-symbols-outlined text-sm">
-                {{ mostrarPassword() ? 'visibility_off' : 'visibility' }}
-              </span>
-            </button>
-          </div>
-          @if (form.get('password')?.invalid && form.get('password')?.touched) {
-            <p class="text-[9px] text-red-500">Mínimo 6 caracteres.</p>
-          }
-        </div>
-
-        <!-- Rol -->
-        <div class="space-y-0.5">
-          <label class="block text-[10px] font-bold text-[#051F20]">Rol</label>
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Rol en el Sistema *</label>
           <select formControlName="rol"
-            class="w-full px-2.5 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#235347]">
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
             <option value="ESTUDIANTE">Estudiante</option>
-            <option value="TUTOR">Tutor Académico</option>
+            <option value="DOCENTE">Docente</option>
             <option value="ADMINISTRADOR">Administrador</option>
           </select>
         </div>
+      </div>
 
-        <!-- Campo Especialidad (Condicional solo si es TUTOR) -->
-        @if (form.get('rol')?.value === 'TUTOR') {
-          <div class="p-2.5 bg-[#DBF0DD]/30 border border-[#8CB79B]/40 rounded-xl space-y-1">
-            <div class="flex items-center gap-1 text-[11px] font-bold text-[#173831]">
-              <span class="material-symbols-outlined text-xs">school</span>
-              <span>Alta de Tutor</span>
-            </div>
-            <label class="block text-[10px] font-bold text-[#051F20]">Especialidad / Área</label>
-            <input type="text" formControlName="especialidad" placeholder="Ej. Cálculo, Programación..."
-              class="w-full px-2.5 py-1 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#235347]" />
+      <!-- SECCIÓN CONDICIONAL: SI ES DOCENTE -> ESPECIALIDAD + SELECCIÓN MÚLTIPLE DE MATERIAS -->
+      <div *ngIf="form.get('rol')?.value === 'DOCENTE' || form.get('rol')?.value === 'TUTOR'" class="p-4 bg-blue-50/50 rounded-xl border border-blue-100 space-y-3">
+        <div class="font-bold text-blue-900 flex items-center gap-1.5 text-xs">
+          <span class="material-symbols-outlined text-sm">badge</span>
+          <span>Perfil y Asignaturas Autorizadas al Docente</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">Especialidad Académica</label>
+            <input type="text" formControlName="especialidad" placeholder="Ej: Bases de Datos y Software"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
           </div>
-        }
-
-        <!-- Estado Checkbox -->
-        <div class="pt-1 flex items-center gap-2">
-          <input type="checkbox" id="user-activo" formControlName="estado"
-                 class="w-3.5 h-3.5 rounded border-gray-300 accent-[#173831] cursor-pointer" />
-          <label for="user-activo" class="text-xs text-gray-700 cursor-pointer font-semibold">Cuenta activa</label>
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">Disponibilidad Habitual</label>
+            <input type="text" formControlName="disponibilidad" placeholder="Ej: Lunes a Jueves 3:00 - 6:00 PM"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+          </div>
         </div>
 
-        <!-- Botones Modal (Footer Fijo) -->
-        <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
-          <button type="button" (click)="cerrarModal()"
-            class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer">
-            Cancelar
-          </button>
-          <button type="submit"
-            class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#173831] hover:bg-[#235347] text-white shadow-sm transition-colors cursor-pointer">
-            {{ editandoId() ? 'Actualizar' : 'Guardar' }}
-          </button>
+        <!-- Asignación de Materias (N:M) -->
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1.5">
+            Seleccionar asignaturas que el docente está habilitado para impartir:
+          </label>
+          <div class="max-h-40 overflow-y-auto p-2 bg-white rounded-lg border border-gray-200 space-y-1.5">
+            <div *ngFor="let m of materias()" class="flex items-center gap-2 p-1.5 hover:bg-gray-50 rounded cursor-pointer"
+                 (click)="toggleMateriaDocente(m.id!)">
+              <input type="checkbox" [checked]="estaMateriaSeleccionada(m.id)" (click)="$event.stopPropagation()"
+                (change)="toggleMateriaDocente(m.id!)" class="rounded text-[#173831] focus:ring-[#173831]">
+              <div class="flex-1 flex items-center justify-between">
+                <span class="font-medium text-gray-800">{{ m.nombre }} ({{ m.codigo }})</span>
+                <span class="text-[10px] text-gray-400 font-mono">{{ m.programa?.nombre }} · Sem. {{ m.semestre }}</span>
+              </div>
+            </div>
+            <div *ngIf="materias().length === 0" class="text-gray-400 text-center py-2">
+              No hay materias creadas en el sistema aún.
+            </div>
+          </div>
+          <p class="text-[10px] text-gray-400 mt-1">El docente solo podrá ofertar tutorías para las materias que tenga marcadas aquí.</p>
+        </div>
+      </div>
+
+      <!-- SECCIÓN CONDICIONAL: SI ES ESTUDIANTE -> FACULTAD + PROGRAMA + SEMESTRE + CÓDIGO -->
+      <div *ngIf="form.get('rol')?.value === 'ESTUDIANTE'" class="p-4 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-3">
+        <div class="font-bold text-emerald-900 flex items-center gap-1.5 text-xs">
+          <span class="material-symbols-outlined text-sm">school</span>
+          <span>Matrícula y Datos Académicos del Estudiante</span>
         </div>
 
-      </form>
-    </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">Facultad</label>
+            <select formControlName="facultadId" (change)="onFacultadChange()"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+              <option value="" disabled>Seleccione facultad...</option>
+              <option *ngFor="let f of facultades()" [value]="f.id">{{ f.nombre }} ({{ f.codigo }})</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">Programa / Carrera *</label>
+            <select formControlName="programaId"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+              <option value="" disabled>
+                {{ !facultadSeleccionadaModal() ? 'Primero seleccione una facultad...' : (programasParaModal().length === 0 ? 'No hay carreras en esta facultad' : 'Seleccione programa de esta facultad...') }}
+              </option>
+              <option *ngFor="let p of programasParaModal()" [value]="p.id">{{ p.nombre }}</option>
+            </select>
+            <p *ngIf="facultadSeleccionadaModal() && programasParaModal().length === 0" class="text-[10px] text-amber-600 mt-1">
+              ⚠️ Esta facultad no tiene programas académicos registrados.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">Semestre Actual de Referencia</label>
+            <select formControlName="semestreActual"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+              <option *ngFor="let s of [1,2,3,4,5,6,7,8,9,10]" [value]="s">Semestre {{ s }}</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">Código Estudiantil</label>
+            <input type="text" formControlName="codigoEstudiantil" placeholder="Ej: SIS-2024-001"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white uppercase">
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end gap-2 shrink-0">
+        <button type="button" (click)="cerrarModal()"
+          class="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 cursor-pointer">
+          Cancelar
+        </button>
+        <button type="submit"
+          class="px-4 py-2 bg-[#173831] hover:bg-[#235347] text-white font-semibold rounded-lg shadow-sm cursor-pointer">
+          Guardar Usuario
+        </button>
+      </div>
+    </form>
   </div>
-}
+</div>

@@ -21,8 +21,8 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Sistema de Gestión de Tutorías Universitarias (SGTU) — API REST")
                         .version("v3.0.0")
-                        .description("API REST para la gestión de tutorías universitarias, usuarios, materias y solicitudes. " +
-                                "Implementa autenticación stateless mediante JWT y control de acceso basado en roles (ADMINISTRADOR, TUTOR, ESTUDIANTE).")
+                        .description("API REST para la gestión de tutorías universitarias, usuarios, materias, programas y facultades. " +
+                                "Implementa autenticación stateless mediante JWT y control de acceso basado en roles (ADMINISTRADOR, DOCENTE, ESTUDIANTE).")
                         .contact(new Contact()
                                 .name("Equipo de Desarrollo SGTU")
                                 .email("backend@tutorias.com"))

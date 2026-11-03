@@ -181,14 +181,14 @@
                 <!-- Datos del Docente -->
                 <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
                   <div class="w-8 h-8 rounded-full bg-[#173831] text-[#8CB79B] font-bold text-xs flex items-center justify-center shrink-0">
-                    {{ sol.tutoria?.tutor?.usuario?.nombre ? (sol.tutoria?.tutor?.usuario?.nombre ?? 'T').charAt(0) : 'T' }}
+                    {{ ((sol.tutoria?.docente?.usuario?.nombre || sol.tutoria?.tutor?.usuario?.nombre) ?? 'D').charAt(0) }}
                   </div>
                   <div class="min-w-0">
                     <div class="font-bold text-xs text-[#051F20] truncate">
-                      {{ sol.tutoria?.tutor?.usuario?.nombre }} {{ sol.tutoria?.tutor?.usuario?.apellido }}
+                      {{ sol.tutoria?.docente?.usuario?.nombre || sol.tutoria?.tutor?.usuario?.nombre }} {{ sol.tutoria?.docente?.usuario?.apellido || sol.tutoria?.tutor?.usuario?.apellido }}
                     </div>
                     <div class="text-[10px] text-gray-400 font-semibold truncate">
-                      {{ sol.tutoria?.tutor?.especialidad || 'Docente Tutor' }}
+                      {{ sol.tutoria?.docente?.especialidad || sol.tutoria?.tutor?.especialidad || 'Docente Tutor' }}
                     </div>
                   </div>
                 </div>

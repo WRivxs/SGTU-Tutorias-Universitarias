@@ -8,6 +8,7 @@ public interface SolicitudService {
     List<Solicitud> listarTodas();
     List<Solicitud> listarPorEstudiante(Long estudianteId);
     List<Solicitud> listarPorTutoria(Long tutoriaId);
+    List<Solicitud> listarPorDocente(Long docenteId);
     Solicitud obtenerPorId(Long id);
     Solicitud crear(Solicitud solicitud);
     Solicitud actualizar(Long id, Solicitud datos);

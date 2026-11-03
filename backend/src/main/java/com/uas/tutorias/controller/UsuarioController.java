@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/usuarios")
 @RequiredArgsConstructor
-@Tag(name = "Usuarios", description = "Gestión de usuarios del sistema (exclusivo para rol ADMINISTRADOR)")
+@Tag(name = "Usuarios", description = "Gestión de usuarios del sistema")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -30,8 +30,8 @@ public class UsuarioController {
     }
 
     // GET /api/usuarios/{id}
-    @Operation(summary = "Obtener usuario por ID", description = "Disponible para ADMINISTRADOR, TUTOR y ESTUDIANTE")
-    @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('TUTOR') or hasRole('ESTUDIANTE')")
+    @Operation(summary = "Obtener usuario por ID", description = "Disponible para todos los roles autenticados")
+    @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('DOCENTE') or hasRole('ESTUDIANTE')")
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> obtener(@PathVariable Long id) {
         return ResponseEntity.ok(usuarioService.obtenerPorId(id));

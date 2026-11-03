@@ -134,8 +134,10 @@ export class Agenda implements OnInit {
         const u = this.usuario();
         if (u) {
           const delTutor = data.filter(t =>
+            t.docente?.usuario?.correo === u.correo ||
             t.tutor?.usuario?.correo === u.correo ||
-            t.tutor?.usuario?.nombre === u.nombre
+            t.docente?.usuario?.id === u.id ||
+            t.tutor?.usuario?.id === u.id
           );
           this.tutorias.set(delTutor);
         } else {

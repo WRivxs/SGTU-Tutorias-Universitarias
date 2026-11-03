@@ -1,13 +1,14 @@
 package com.uas.tutorias.service;
 
+import com.uas.tutorias.entity.Estudiante;
+import com.uas.tutorias.entity.Programa;
 import com.uas.tutorias.entity.Solicitud;
 import com.uas.tutorias.entity.Tutoria;
 import com.uas.tutorias.entity.Usuario;
-import com.uas.tutorias.exception.BadRequestException;
 import com.uas.tutorias.exception.ConflictException;
+import com.uas.tutorias.repository.EstudianteRepository;
 import com.uas.tutorias.repository.SolicitudRepository;
 import com.uas.tutorias.repository.TutoriaRepository;
-import com.uas.tutorias.repository.UsuarioRepository;
 import com.uas.tutorias.service.impl.SolicitudServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,7 +31,7 @@ class SolicitudServiceTest {
     private SolicitudRepository solicitudRepository;
 
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private EstudianteRepository estudianteRepository;
 
     @Mock
     private TutoriaRepository tutoriaRepository;
@@ -38,19 +39,32 @@ class SolicitudServiceTest {
     @InjectMocks
     private SolicitudServiceImpl solicitudService;
 
-    private Usuario estudiante;
+    private Usuario usuario;
+    private Estudiante estudiante;
     private Tutoria tutoria;
     private Solicitud solicitud;
 
     @BeforeEach
     void setUp() {
-        estudiante = new Usuario();
-        estudiante.setId(3L);
-        estudiante.setNombre("Eduardo");
-        estudiante.setRol(Usuario.Rol.ESTUDIANTE);
+        usuario = new Usuario();
+        usuario.setId(3L);
+        usuario.setNombre("Eduardo");
+        usuario.setRol(Usuario.Rol.ESTUDIANTE);
+
+        Programa programa = new Programa();
+        programa.setId(1L);
+        programa.setNombre("Ingeniería de Sistemas");
+
+        estudiante = new Estudiante();
+        estudiante.setId(1L);
+        estudiante.setUsuario(usuario);
+        estudiante.setPrograma(programa);
+        estudiante.setSemestreActual(5);
+        estudiante.setCodigoEstudiantil("SIS-2022-0145");
 
         tutoria = new Tutoria();
         tutoria.setId(10L);
+        tutoria.setCupoMaximo(5);
         tutoria.setEstado(Tutoria.Estado.DISPONIBLE);
 
         solicitud = new Solicitud();
@@ -61,10 +75,11 @@ class SolicitudServiceTest {
     }
 
     @Test
-    @DisplayName("Debe crear solicitud exitosamente cuando estudiante y tutoria son válidos")
+    @DisplayName("Debe crear solicitud exitosamente cuando estudiante y tutoría son válidos")
     void crear_SolicitudValida_GuardaSolicitud() {
-        when(usuarioRepository.findById(3L)).thenReturn(Optional.of(estudiante));
+        when(estudianteRepository.findById(1L)).thenReturn(Optional.of(estudiante));
         when(tutoriaRepository.findById(10L)).thenReturn(Optional.of(tutoria));
+        when(solicitudRepository.existsByEstudianteIdAndTutoriaId(1L, 10L)).thenReturn(false);
         when(solicitudRepository.save(any(Solicitud.class))).thenReturn(solicitud);
 
         Solicitud resultado = solicitudService.crear(solicitud);
@@ -75,12 +90,13 @@ class SolicitudServiceTest {
     }
 
     @Test
-    @DisplayName("Debe lanzar BadRequestException si el usuario no tiene rol ESTUDIANTE")
-    void crear_UsuarioNoEsEstudiante_LanzaBadRequestException() {
-        estudiante.setRol(Usuario.Rol.TUTOR);
-        when(usuarioRepository.findById(3L)).thenReturn(Optional.of(estudiante));
+    @DisplayName("Debe lanzar ConflictException si el estudiante ya tiene una solicitud para la misma tutoría")
+    void crear_SolicitudDuplicada_LanzaConflictException() {
+        when(estudianteRepository.findById(1L)).thenReturn(Optional.of(estudiante));
+        when(tutoriaRepository.findById(10L)).thenReturn(Optional.of(tutoria));
+        when(solicitudRepository.existsByEstudianteIdAndTutoriaId(1L, 10L)).thenReturn(true);
 
-        assertThrows(BadRequestException.class, () -> solicitudService.crear(solicitud));
+        assertThrows(ConflictException.class, () -> solicitudService.crear(solicitud));
         verify(solicitudRepository, never()).save(any(Solicitud.class));
     }
 
@@ -88,7 +104,7 @@ class SolicitudServiceTest {
     @DisplayName("Debe lanzar ConflictException si la tutoría no está DISPONIBLE")
     void crear_TutoriaNoDisponible_LanzaConflictException() {
         tutoria.setEstado(Tutoria.Estado.OCUPADA);
-        when(usuarioRepository.findById(3L)).thenReturn(Optional.of(estudiante));
+        when(estudianteRepository.findById(1L)).thenReturn(Optional.of(estudiante));
         when(tutoriaRepository.findById(10L)).thenReturn(Optional.of(tutoria));
 
         assertThrows(ConflictException.class, () -> solicitudService.crear(solicitud));
@@ -96,8 +112,8 @@ class SolicitudServiceTest {
     }
 
     @Test
-    @DisplayName("Debe cambiar estado de tutoría a OCUPADA al ACEPTAR una solicitud")
-    void cambiarEstado_AceptarSolicitud_ActualizaTutoriaA_Ocupada() {
+    @DisplayName("Debe responder a una solicitud actualizando su estado")
+    void cambiarEstado_AceptarSolicitud_ActualizaEstado() {
         when(solicitudRepository.findById(100L)).thenReturn(Optional.of(solicitud));
         when(solicitudRepository.save(any(Solicitud.class))).thenReturn(solicitud);
 
@@ -105,7 +121,7 @@ class SolicitudServiceTest {
 
         assertNotNull(resultado);
         assertEquals(Solicitud.Estado.ACEPTADA, resultado.getEstado());
-        assertEquals(Tutoria.Estado.OCUPADA, tutoria.getEstado());
-        verify(tutoriaRepository, times(1)).save(tutoria);
+        assertEquals("Aprobada", resultado.getComentario());
+        verify(solicitudRepository, times(1)).save(solicitud);
     }
 }

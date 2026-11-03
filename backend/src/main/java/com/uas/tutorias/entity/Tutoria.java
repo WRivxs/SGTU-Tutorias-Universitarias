@@ -2,6 +2,7 @@ package com.uas.tutorias.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,12 +25,14 @@ public class Tutoria {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tutor_id", nullable = false)
+    @JoinColumn(name = "docente_id", nullable = false)
+    @NotNull(message = "El docente es obligatorio")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private Tutor tutor;
+    private Docente docente;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "materia_id", nullable = false)
+    @NotNull(message = "La materia es obligatoria")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Materia materia;
 
@@ -40,6 +43,11 @@ public class Tutoria {
     @NotNull(message = "La hora es obligatoria")
     @Column(nullable = false)
     private LocalTime hora;
+
+    @NotNull(message = "El cupo máximo es obligatorio")
+    @Min(value = 1, message = "El cupo debe ser al menos 1")
+    @Column(name = "cupo_maximo", nullable = false)
+    private Integer cupoMaximo = 5;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

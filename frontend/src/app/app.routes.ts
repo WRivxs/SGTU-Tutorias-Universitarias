@@ -26,6 +26,10 @@ export const routes: Routes = [
         loadComponent: () => import('./modules/admin/pages/gestion-usuarios/gestion-usuarios').then(m => m.GestionUsuarios)
       },
       {
+        path: 'facultades-programas',
+        loadComponent: () => import('./modules/admin/pages/gestion-facultades-programas/gestion-facultades-programas').then(m => m.GestionFacultadesProgramas)
+      },
+      {
         path: 'materias',
         loadComponent: () => import('./modules/admin/pages/gestion-materias/gestion-materias').then(m => m.GestionMaterias)
       },
@@ -36,10 +40,10 @@ export const routes: Routes = [
     ]
   },
 
-  // Tutor
+  // Docente (Tutor)
   {
     path: 'tutor',
-    canActivate: [authGuard, roleGuard(['TUTOR'])],
+    canActivate: [authGuard, roleGuard(['DOCENTE', 'TUTOR'])],
     children: [
       { path: '', redirectTo: 'mis-tutorias', pathMatch: 'full' },
       {

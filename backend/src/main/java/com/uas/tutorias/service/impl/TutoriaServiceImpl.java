@@ -1,12 +1,12 @@
 package com.uas.tutorias.service.impl;
 
+import com.uas.tutorias.entity.Docente;
 import com.uas.tutorias.entity.Materia;
-import com.uas.tutorias.entity.Tutor;
 import com.uas.tutorias.entity.Tutoria;
 import com.uas.tutorias.exception.BadRequestException;
 import com.uas.tutorias.exception.ResourceNotFoundException;
+import com.uas.tutorias.repository.DocenteRepository;
 import com.uas.tutorias.repository.MateriaRepository;
-import com.uas.tutorias.repository.TutorRepository;
 import com.uas.tutorias.repository.TutoriaRepository;
 import com.uas.tutorias.service.TutoriaService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import java.util.List;
 public class TutoriaServiceImpl implements TutoriaService {
 
     private final TutoriaRepository tutoriaRepository;
-    private final TutorRepository tutorRepository;
+    private final DocenteRepository docenteRepository;
     private final MateriaRepository materiaRepository;
 
     @Override
@@ -44,6 +44,54 @@ public class TutoriaServiceImpl implements TutoriaService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Tutoria> listarPorDocente(Long docenteId) {
+        return tutoriaRepository.findByDocenteId(docenteId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Tutoria> listarPorPrograma(Long programaId) {
+        return tutoriaRepository.findByProgramaId(programaId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Tutoria> listarPorProgramaYSemestre(Long programaId, Integer semestre) {
+        return tutoriaRepository.findByProgramaIdAndSemestre(programaId, semestre);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Tutoria> listarConFiltros(Long programaId, Integer semestre, Long materiaId, Long docenteId, Tutoria.Estado estado) {
+        if (docenteId != null && estado != null) {
+            return tutoriaRepository.findByDocenteIdAndEstado(docenteId, estado);
+        }
+        if (docenteId != null) {
+            return tutoriaRepository.findByDocenteId(docenteId);
+        }
+        if (programaId != null && semestre != null && estado != null) {
+            return tutoriaRepository.findByProgramaIdAndSemestreAndEstado(programaId, semestre, estado);
+        }
+        if (programaId != null && semestre != null) {
+            return tutoriaRepository.findByProgramaIdAndSemestre(programaId, semestre);
+        }
+        if (programaId != null && estado != null) {
+            return tutoriaRepository.findByProgramaIdAndEstado(programaId, estado);
+        }
+        if (programaId != null) {
+            return tutoriaRepository.findByProgramaId(programaId);
+        }
+        if (materiaId != null) {
+            return tutoriaRepository.findByMateriaId(materiaId);
+        }
+        if (estado != null) {
+            return tutoriaRepository.findByEstado(estado);
+        }
+        return tutoriaRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Tutoria obtenerPorId(Long id) {
         return tutoriaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tutoría no encontrada con id: " + id));
@@ -51,16 +99,16 @@ public class TutoriaServiceImpl implements TutoriaService {
 
     @Override
     public Tutoria crear(Tutoria tutoria) {
-        if (tutoria.getTutor() == null || tutoria.getTutor().getId() == null) {
-            throw new BadRequestException("Debe indicar el tutor responsable de la tutoría");
+        if (tutoria.getDocente() == null || tutoria.getDocente().getId() == null) {
+            throw new BadRequestException("Debe indicar el docente responsable de la tutoría");
         }
         if (tutoria.getMateria() == null || tutoria.getMateria().getId() == null) {
             throw new BadRequestException("Debe indicar la materia para la tutoría");
         }
 
-        Long tutorId = tutoria.getTutor().getId();
-        Tutor tutor = tutorRepository.findById(tutorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Tutor no encontrado con id: " + tutorId));
+        Long docenteId = tutoria.getDocente().getId();
+        Docente docente = docenteRepository.findById(docenteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Docente no encontrado con id: " + docenteId));
 
         Long materiaId = tutoria.getMateria().getId();
         Materia materia = materiaRepository.findById(materiaId)
@@ -70,8 +118,19 @@ public class TutoriaServiceImpl implements TutoriaService {
             throw new BadRequestException("No se puede programar una tutoría para una materia inactiva");
         }
 
-        tutoria.setTutor(tutor);
+        // Validación de negocio: Verificar si el docente tiene autorizada esta materia (si tiene asignaciones)
+        if (docente.getMaterias() != null && !docente.getMaterias().isEmpty()) {
+            boolean autorizada = docente.getMaterias().stream().anyMatch(m -> m.getId().equals(materiaId));
+            if (!autorizada) {
+                throw new BadRequestException("El docente no tiene asignada la materia: " + materia.getNombre());
+            }
+        }
+
+        tutoria.setDocente(docente);
         tutoria.setMateria(materia);
+        if (tutoria.getCupoMaximo() == null || tutoria.getCupoMaximo() <= 0) {
+            tutoria.setCupoMaximo(5);
+        }
         if (tutoria.getEstado() == null) {
             tutoria.setEstado(Tutoria.Estado.DISPONIBLE);
         }
@@ -83,11 +142,11 @@ public class TutoriaServiceImpl implements TutoriaService {
     public Tutoria actualizar(Long id, Tutoria datos) {
         Tutoria tutoria = obtenerPorId(id);
 
-        if (datos.getTutor() != null && datos.getTutor().getId() != null) {
-            Long tutorId = datos.getTutor().getId();
-            Tutor tutor = tutorRepository.findById(tutorId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Tutor no encontrado con id: " + tutorId));
-            tutoria.setTutor(tutor);
+        if (datos.getDocente() != null && datos.getDocente().getId() != null) {
+            Long docenteId = datos.getDocente().getId();
+            Docente docente = docenteRepository.findById(docenteId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Docente no encontrado con id: " + docenteId));
+            tutoria.setDocente(docente);
         }
 
         if (datos.getMateria() != null && datos.getMateria().getId() != null) {
@@ -102,6 +161,9 @@ public class TutoriaServiceImpl implements TutoriaService {
         }
         if (datos.getHora() != null) {
             tutoria.setHora(datos.getHora());
+        }
+        if (datos.getCupoMaximo() != null && datos.getCupoMaximo() > 0) {
+            tutoria.setCupoMaximo(datos.getCupoMaximo());
         }
         if (datos.getModalidad() != null) {
             tutoria.setModalidad(datos.getModalidad());

@@ -21,10 +21,10 @@
         </div>
       }
 
-      <!-- Encabezado de la Sección -->
-      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <!-- Encabezado de la Sección con Badge de Carrera del Estudiante (Corrección del Profesor) -->
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div class="flex items-center gap-2 mb-1">
+          <div class="flex flex-wrap items-center gap-2 mb-1">
             <span class="px-2.5 py-0.5 rounded-full bg-[#DBF0DD] text-[#173831] text-[10px] font-bold uppercase tracking-wider">
               Catálogo de Tutorías
             </span>
@@ -32,17 +32,29 @@
             <span class="text-xs text-gray-500 font-semibold">
               {{ tutoriasFiltradas().length }} sesiones disponibles
             </span>
+            @if (perfilEstudiante()?.programa) {
+              <span class="text-xs text-gray-400">•</span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#173831] text-[#DBF0DD] text-[10px] font-bold">
+                <span class="material-symbols-outlined text-xs">school</span>
+                {{ perfilEstudiante()?.programa?.nombre }}
+              </span>
+            }
+            @if (perfilEstudiante()?.semestreActual) {
+              <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+                Tu Semestre: {{ perfilEstudiante()?.semestreActual }}°
+              </span>
+            }
           </div>
           <h1 class="text-xl font-bold text-[#051F20]">Encuentra Apoyo Académico</h1>
           <p class="text-xs text-gray-500 mt-0.5">
-            Explora las asesorías grupales programadas por los docentes tutores y solicita tu cupo.
+            Explora las asesorías grupales programadas por tus docentes tutores y asegura tu lugar en la sesión.
           </p>
         </div>
       </div>
 
-      <!-- Barra de Filtros y Búsqueda -->
-      <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center gap-3">
-        <!-- Input de búsqueda -->
+      <!-- Barra de Filtros Completa (Corrección Profesor: Selector de Semestre 1-10 + Materia + Docente) -->
+      <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col lg:flex-row items-center gap-3">
+        <!-- Input de búsqueda por Materia, Docente o Tema -->
         <div class="relative flex-1 w-full">
           <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
           <input type="text" [(ngModel)]="busqueda"
@@ -50,25 +62,49 @@
                  class="w-full pl-9 pr-4 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347] focus:ring-1 focus:ring-[#8CB79B]" />
         </div>
 
-        <!-- Filtro por Materia -->
-        <select [(ngModel)]="filtroMateria"
-                class="w-full sm:w-56 px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-[#235347]">
-          <option value="TODAS">Todas las materias</option>
-          @for (m of materias(); track m.id) {
-            <option [value]="m.id">{{ m.nombre }}</option>
-          }
-        </select>
+        <!-- Selector de Semestre (Corrección del Profesor: 1° a 10°) -->
+        <div class="w-full sm:w-auto">
+          <select [(ngModel)]="filtroSemestre"
+                  class="w-full sm:w-44 px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl text-gray-700 font-semibold focus:outline-none focus:border-[#235347]">
+            <option value="TODOS">Todos los semestres</option>
+            <option value="1">1° Semestre</option>
+            <option value="2">2° Semestre</option>
+            <option value="3">3° Semestre</option>
+            <option value="4">4° Semestre</option>
+            <option value="5">5° Semestre</option>
+            <option value="6">6° Semestre</option>
+            <option value="7">7° Semestre</option>
+            <option value="8">8° Semestre</option>
+            <option value="9">9° Semestre</option>
+            <option value="10">10° Semestre</option>
+          </select>
+        </div>
+
+        <!-- Filtro por Asignatura -->
+        <div class="w-full sm:w-auto">
+          <select [(ngModel)]="filtroMateria"
+                  class="w-full sm:w-56 px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-[#235347]">
+            <option value="TODAS">Todas las asignaturas</option>
+            @for (m of materiasDelPrograma(); track m.id) {
+              <option [value]="m.id">
+                {{ m.nombre }} @if (m.semestre) { (Sem. {{ m.semestre }}°) }
+              </option>
+            }
+          </select>
+        </div>
 
         <!-- Filtro por Modalidad -->
-        <select [(ngModel)]="filtroModalidad"
-                class="w-full sm:w-44 px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-[#235347]">
-          <option value="TODAS">Todas las modalidades</option>
-          <option value="PRESENCIAL">Presencial (Campus)</option>
-          <option value="VIRTUAL">Virtual (En línea)</option>
-        </select>
+        <div class="w-full sm:w-auto">
+          <select [(ngModel)]="filtroModalidad"
+                  class="w-full sm:w-40 px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-[#235347]">
+            <option value="TODAS">Modalidades</option>
+            <option value="PRESENCIAL">Presencial</option>
+            <option value="VIRTUAL">Virtual</option>
+          </select>
+        </div>
       </div>
 
-      <!-- Catálogo en Tarjetas -->
+      <!-- Catálogo de Tutorías en Tarjetas -->
       @if (cargando()) {
         <div class="py-24 text-center text-gray-400 text-xs flex flex-col items-center gap-2">
           <span class="material-symbols-outlined animate-spin text-2xl text-[#173831]">progress_activity</span>
@@ -78,7 +114,7 @@
         <div class="bg-white p-12 rounded-2xl border border-gray-100 shadow-sm text-center text-gray-400 text-xs space-y-2">
           <span class="material-symbols-outlined text-4xl text-gray-300">search_off</span>
           <p class="font-semibold text-gray-600">No encontramos tutorías con los filtros seleccionados.</p>
-          <p class="text-[11px]">Intenta buscar con otros términos o seleccionar otra materia.</p>
+          <p class="text-[11px]">Intenta buscar con otros términos o cambiar el filtro de semestre.</p>
         </div>
       } @else {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -88,9 +124,16 @@
               <!-- Cabecera de la Tarjeta -->
               <div>
                 <div class="flex items-start justify-between gap-2 mb-2">
-                  <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#DBF0DD] text-[#173831]">
-                    {{ t.materia?.nombre || 'Materia General' }}
-                  </span>
+                  <div class="space-y-1">
+                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#DBF0DD] text-[#173831] inline-block">
+                      {{ t.materia?.nombre || 'Materia General' }}
+                    </span>
+                    @if (t.materia?.semestre) {
+                      <div class="text-[10px] text-gray-400 font-semibold">
+                        Semestre {{ t.materia?.semestre }}° @if (t.materia?.codigo) { · Cod. {{ t.materia?.codigo }} }
+                      </div>
+                    }
+                  </div>
 
                   <!-- Badge Modalidad -->
                   <span [class]="'px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ' +
@@ -128,28 +171,33 @@
                 </div>
               </div>
 
-              <!-- Datos del Docente Tutor y Cupos -->
+              <!-- Datos del Docente Tutor y Cupos (Corrección del Profesor) -->
               <div class="pt-2 border-t border-gray-100 flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
                   <div class="w-8 h-8 rounded-full bg-[#173831] text-[#8CB79B] font-bold flex items-center justify-center text-xs">
-                    {{ t.tutor?.usuario?.nombre ? (t.tutor?.usuario?.nombre ?? 'T').charAt(0) : 'T' }}
+                    {{ (t.docente?.usuario?.nombre || t.tutor?.usuario?.nombre || 'D').charAt(0) }}
                   </div>
                   <div>
                     <div class="font-bold text-xs text-[#051F20]">
-                      {{ t.tutor?.usuario?.nombre }} {{ t.tutor?.usuario?.apellido }}
+                      {{ t.docente?.usuario?.nombre || t.tutor?.usuario?.nombre }} {{ t.docente?.usuario?.apellido || t.tutor?.usuario?.apellido }}
                     </div>
                     <div class="text-[10px] text-gray-400 font-semibold">
-                      {{ t.tutor?.especialidad || 'Docente Tutor' }}
+                      {{ t.docente?.especialidad || t.tutor?.especialidad || 'Docente Tutor' }}
                     </div>
                   </div>
                 </div>
 
-                <!-- Contador de Inscritos -->
+                <!-- Contador de Cupos Disponibles -->
                 <div class="text-right">
-                  <div class="text-[10px] font-bold text-[#173831] flex items-center gap-1 justify-end">
+                  <div class="text-[10px] font-bold flex items-center gap-1 justify-end"
+                       [class.text-emerald-700]="hayCuposDisponibles(t)"
+                       [class.text-red-600]="!hayCuposDisponibles(t)">
                     <span class="material-symbols-outlined text-xs">groups</span>
-                    <span>{{ contarInscritos(t.id) }} inscritos</span>
+                    <span>{{ contarInscritos(t.id) }} / {{ obtenerCupoMaximo(t) }} cupos</span>
                   </div>
+                  @if (!hayCuposDisponibles(t)) {
+                    <span class="text-[9px] font-bold text-red-500 uppercase">Cupos Llenos</span>
+                  }
                 </div>
               </div>
 
@@ -164,6 +212,10 @@
                   <div class="w-full py-2 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-center text-xs font-bold flex items-center justify-center gap-1.5">
                     <span class="material-symbols-outlined text-base text-amber-600 animate-spin">hourglass_empty</span>
                     <span>Solicitud pendiente de aprobación</span>
+                  </div>
+                } @else if (!hayCuposDisponibles(t)) {
+                  <div class="w-full py-2 bg-gray-100 text-gray-500 rounded-xl text-center text-xs font-semibold">
+                    Sesión Completa (Sin cupo)
                   </div>
                 } @else {
                   <button (click)="abrirModalSolicitud(t)"
@@ -193,7 +245,7 @@
       <div class="flex items-center justify-between pb-4 border-b border-gray-100">
         <div>
           <h2 class="text-base font-bold text-[#051F20]">Confirmar Solicitud de Tutoría</h2>
-          <p class="text-xs text-gray-500">Unirse a la sesión académica grupal.</p>
+          <p class="text-xs text-gray-500">Unirse a la sesión académica con tu docente.</p>
         </div>
         <button (click)="cerrarModalSolicitud()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
           <span class="material-symbols-outlined">close</span>
@@ -219,7 +271,10 @@
             </div>
             <div class="flex items-center gap-1.5">
               <span class="material-symbols-outlined text-xs text-gray-400">person</span>
-              <span>Prof. {{ tutoriaSeleccionada()?.tutor?.usuario?.nombre }} {{ tutoriaSeleccionada()?.tutor?.usuario?.apellido }}</span>
+              <span>
+                Prof. {{ tutoriaSeleccionada()?.docente?.usuario?.nombre || tutoriaSeleccionada()?.tutor?.usuario?.nombre }}
+                {{ tutoriaSeleccionada()?.docente?.usuario?.apellido || tutoriaSeleccionada()?.tutor?.usuario?.apellido }}
+              </span>
             </div>
             <div class="flex items-center gap-1.5">
               <span class="material-symbols-outlined text-xs text-gray-400">place</span>
@@ -234,9 +289,9 @@
             Temas o dudas específicas a consultar (Opcional)
           </label>
           <textarea [(ngModel)]="comentarioSolicitud" rows="3"
-            placeholder="Ej. Tengo dudas con los ejercicios de integrales definidas o preparación para el parcial..."
+            placeholder="Ej. Dudas con el taller de límites, preparación para el examen..."
             class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347]"></textarea>
-          <p class="text-[10px] text-gray-400">Esta nota la leerá el tutor para preparar la sesión.</p>
+          <p class="text-[10px] text-gray-400">Esta nota la leerá el docente para preparar la sesión.</p>
         </div>
       </div>
 

@@ -4,12 +4,12 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { NavbarComponent } from '../../../../shared/components/layout/navbar/navbar.component';
 import { SidebarTutorComponent } from '../../../../shared/components/layout/sidebar-tutor/sidebar-tutor.component';
 import { TutoriaService } from '../../../../core/services/tutoria.service';
-import { MateriaService } from '../../../admin/services/materia.service';
-import { TutorPerfilService, TutorPerfil } from '../../../../core/services/tutor-perfil.service';
+import { DocenteService } from '../../../../core/services/docente.service';
 import { SolicitudService } from '../../../../core/services/solicitud.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { RouterLink } from '@angular/router';
 import { Tutoria, EstadoTutoria, ModalidadTutoria } from '../../../../shared/models/tutoria.model';
+import { Docente } from '../../../../shared/models/docente.model';
 import { Materia } from '../../../../shared/models/materia.model';
 import { Solicitud } from '../../../../shared/models/solicitud.model';
 
@@ -21,17 +21,17 @@ import { Solicitud } from '../../../../shared/models/solicitud.model';
 })
 export class MisTutorias implements OnInit {
   private tutoriaService = inject(TutoriaService);
-  private materiaService = inject(MateriaService);
-  private tutorPerfilService = inject(TutorPerfilService);
+  private docenteService = inject(DocenteService);
   private solicitudService = inject(SolicitudService);
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
   usuario = this.authService.usuario;
-  perfilTutor = signal<TutorPerfil | null>(null);
+  perfilDocente = signal<Docente | null>(null);
 
   tutorias = signal<Tutoria[]>([]);
-  materias = signal<Materia[]>([]);
+  // Materias que este docente tiene autorizadas/capacitadas según observación del docente
+  materiasAutorizadas = signal<Materia[]>([]);
   solicitudes = signal<Solicitud[]>([]);
   cargando = signal<boolean>(true);
 
@@ -50,6 +50,7 @@ export class MisTutorias implements OnInit {
     materiaId: ['', [Validators.required]],
     fecha: ['', [Validators.required]],
     hora: ['', [Validators.required]],
+    cupoMaximo: [5, [Validators.required, Validators.min(1)]],
     modalidad: ['PRESENCIAL' as ModalidadTutoria, [Validators.required]],
     lugar: ['', [Validators.required]],
     descripcion: [''],
@@ -69,29 +70,35 @@ export class MisTutorias implements OnInit {
 
   cargarDatos(): void {
     this.cargando.set(true);
-
-    // 1. Cargar materias del catálogo
-    this.materiaService.listar().subscribe({
-      next: (mats) => this.materias.set(mats),
-      error: () => {}
-    });
-
-    // 2. Intentar obtener el perfil de tutor del usuario logueado (si existe)
     const u = this.usuario();
+
     if (u && u.id) {
-      this.tutorPerfilService.obtenerPorUsuarioId(u.id).subscribe({
-        next: (perfil) => this.perfilTutor.set(perfil),
+      // 1. Cargar el perfil docente con sus materias autorizadas (N:M)
+      this.docenteService.obtenerPorUsuarioId(u.id).subscribe({
+        next: (docente) => {
+          this.perfilDocente.set(docente);
+          const mats = docente.materias || [];
+          this.materiasAutorizadas.set(mats);
+        },
         error: () => {
-          // Si no tiene perfil aún, podemos auto-registrar su perfil de tutor
-          this.crearPerfilTutorSiNoExiste(u.id);
+          // Si no tiene perfil aún, buscar en la lista general de docentes
+          this.docenteService.listar().subscribe({
+            next: (lista) => {
+              const encontrado = lista.find(d => d.usuario?.id === u.id || d.usuario?.correo === u.correo);
+              if (encontrado) {
+                this.perfilDocente.set(encontrado);
+                this.materiasAutorizadas.set(encontrado.materias || []);
+              }
+            }
+          });
         }
       });
     }
 
-    // 3. Cargar las solicitudes para calcular cuántos estudiantes se han inscrito
+    // 2. Cargar las solicitudes
     this.cargarSolicitudes();
 
-    // 4. Cargar las tutorías directamente (sin bloquear por el perfil)
+    // 3. Cargar las tutorías
     this.cargarTutorias();
   }
 
@@ -122,44 +129,16 @@ export class MisTutorias implements OnInit {
     this.tutoriaSeleccionadaEstudiantes.set(null);
   }
 
-  private crearPerfilTutorSiNoExiste(usuarioId: number): void {
-    const nuevoPerfil: TutorPerfil = {
-      usuario: { id: usuarioId },
-      especialidad: 'Docente Académico',
-      descripcion: 'Tutor de acompañamiento universitario',
-      disponibilidad: 'Lunes a Viernes'
-    };
-    this.tutorPerfilService.crear(nuevoPerfil).subscribe({
-      next: (creado) => this.perfilTutor.set(creado),
-      error: () => {
-        // Si no se puede crear por permisos, buscamos en la lista general de tutores
-        this.tutorPerfilService.listar().subscribe({
-          next: (lista) => {
-            const encontrado = lista.find(t => t.usuario?.id === usuarioId);
-            if (encontrado) {
-              this.perfilTutor.set(encontrado);
-            } else if (lista.length > 0) {
-              this.perfilTutor.set(lista[0]);
-            }
-          },
-          error: () => {}
-        });
-      }
-    });
-  }
-
   cargarTutorias(): void {
     this.tutoriaService.listar().subscribe({
       next: (data) => {
         const u = this.usuario();
         if (u) {
-          // Filtramos las tutorías que corresponden al tutor logueado
-          const delTutor = data.filter(t =>
-            t.tutor?.usuario?.correo === u.correo ||
-            t.tutor?.usuario?.nombre === u.nombre
+          const delDocente = data.filter(t =>
+            (t.docente?.usuario?.correo === u.correo || t.docente?.usuario?.id === u.id) ||
+            (t.tutor?.usuario?.correo === u.correo || t.tutor?.usuario?.id === u.id)
           );
-          // Si encontramos sus tutorías las mostramos; si no tiene ninguna creada aún, dejamos lista vacía
-          this.tutorias.set(delTutor);
+          this.tutorias.set(delDocente);
         } else {
           this.tutorias.set(data);
         }
@@ -182,12 +161,16 @@ export class MisTutorias implements OnInit {
     manana.setDate(manana.getDate() + 1);
     const fechaDefecto = manana.toISOString().split('T')[0];
 
+    const mats = this.materiasAutorizadas();
+    const primeraMateria = mats.length > 0 ? String(mats[0].id) : '';
+
     this.form.reset({
-      materiaId: this.materias().length > 0 ? String(this.materias()[0].id) : '',
+      materiaId: primeraMateria,
       fecha: fechaDefecto,
       hora: '14:00',
+      cupoMaximo: 5,
       modalidad: 'PRESENCIAL',
-      lugar: 'Aula 204',
+      lugar: 'Aula 204 - Bloque Central',
       descripcion: '',
       estado: 'DISPONIBLE'
     });
@@ -200,6 +183,7 @@ export class MisTutorias implements OnInit {
       materiaId: t.materia?.id ? String(t.materia.id) : '',
       fecha: t.fecha,
       hora: t.hora ? t.hora.substring(0, 5) : '14:00',
+      cupoMaximo: t.cupoMaximo || 5,
       modalidad: t.modalidad,
       lugar: t.lugar || '',
       descripcion: t.descripcion || '',
@@ -225,13 +209,13 @@ export class MisTutorias implements OnInit {
       horaFormat += ':00';
     }
 
-    const perf = this.perfilTutor();
-    // En la base de datos el tutor Wadid tiene id 1 en la tabla tutores
-    const tutorId = perf?.id || 1;
+    const perf = this.perfilDocente();
+    const docenteId = perf?.id || 1;
 
     const payload: any = {
       materia: { id: Number(val.materiaId) },
-      tutor: { id: tutorId },
+      docente: { id: docenteId },
+      cupoMaximo: Number(val.cupoMaximo || 5),
       fecha: val.fecha!,
       hora: horaFormat,
       modalidad: val.modalidad as ModalidadTutoria,

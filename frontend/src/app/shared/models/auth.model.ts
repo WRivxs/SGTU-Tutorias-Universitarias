@@ -1,3 +1,5 @@
+import { RolUsuario } from './usuario.model';
+
 export interface LoginRequest {
   correo: string;
   password: string;
@@ -10,7 +12,7 @@ export interface AuthResponse {
   nombre: string;
   apellido: string;
   correo: string;
-  rol: 'ADMINISTRADOR' | 'TUTOR' | 'ESTUDIANTE';
+  rol: RolUsuario;
 }
 
 export interface UsuarioSesion {
@@ -18,5 +20,5 @@ export interface UsuarioSesion {
   nombre: string;
   apellido: string;
   correo: string;
-  rol: 'ADMINISTRADOR' | 'TUTOR' | 'ESTUDIANTE';
+  rol: RolUsuario;
 }

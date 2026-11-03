@@ -5,6 +5,8 @@ import { NavbarComponent } from '../../../../shared/components/layout/navbar/nav
 import { SidebarEstudianteComponent } from '../../../../shared/components/layout/sidebar-estudiante/sidebar-estudiante.component';
 import { AuthService } from '../../../../core/services/auth.service';
 import { UsuarioService } from '../../../../core/services/usuario.service';
+import { EstudianteService } from '../../../../core/services/estudiante.service';
+import { Estudiante } from '../../../../shared/models/estudiante.model';
 
 /* Validador de coincidencia de contraseñas */
 function passwordMatchValidator(): ValidatorFn {
@@ -27,8 +29,10 @@ export class PerfilEstudiante implements OnInit {
   private fb          = inject(FormBuilder);
   private authService = inject(AuthService);
   private usuarioSvc  = inject(UsuarioService);
+  private estudianteSvc = inject(EstudianteService);
 
   usuario = this.authService.usuario;
+  perfilEstudiante = signal<Estudiante | null>(null);
 
   guardandoCuenta = signal<boolean>(false);
   exitoCuenta     = signal<string | null>(null);
@@ -48,6 +52,13 @@ export class PerfilEstudiante implements OnInit {
         nombre:  u.nombre  || '',
         apellido: u.apellido || ''
       });
+
+      if (u.id) {
+        this.estudianteSvc.obtenerPorUsuarioId(u.id).subscribe({
+          next: (est) => this.perfilEstudiante.set(est),
+          error: () => {}
+        });
+      }
     }
   }
 

@@ -2,6 +2,7 @@ package com.uas.tutorias.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,11 +24,13 @@ public class Solicitud {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "estudiante_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password"})
-    private Usuario estudiante;
+    @NotNull(message = "El estudiante es obligatorio")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Estudiante estudiante;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tutoria_id", nullable = false)
+    @NotNull(message = "La tutoría es obligatoria")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Tutoria tutoria;
 

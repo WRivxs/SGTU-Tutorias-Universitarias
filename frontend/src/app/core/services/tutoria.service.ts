@@ -5,12 +5,28 @@ import { Tutoria } from '../../shared/models/tutoria.model';
 
 const API_URL = 'http://localhost:8080/api/tutorias';
 
+export interface FiltrosTutoria {
+  programaId?: number;
+  semestre?: number;
+  materiaId?: number;
+  docenteId?: number;
+  estado?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TutoriaService {
   private http = inject(HttpClient);
 
-  listar(): Observable<Tutoria[]> {
-    return this.http.get<Tutoria[]>(API_URL);
+  listar(filtros?: FiltrosTutoria): Observable<Tutoria[]> {
+    const params: any = {};
+    if (filtros) {
+      if (filtros.programaId) params.programaId = filtros.programaId;
+      if (filtros.semestre) params.semestre = filtros.semestre;
+      if (filtros.materiaId) params.materiaId = filtros.materiaId;
+      if (filtros.docenteId) params.docenteId = filtros.docenteId;
+      if (filtros.estado) params.estado = filtros.estado;
+    }
+    return this.http.get<Tutoria[]>(API_URL, { params });
   }
 
   obtenerPorId(id: number): Observable<Tutoria> {

@@ -1,160 +1,212 @@
-<div class="flex h-screen w-full overflow-hidden bg-gray-50">
+<div class="flex h-screen overflow-hidden bg-gray-50">
   <app-sidebar></app-sidebar>
 
-  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+  <div class="flex-1 flex flex-col min-w-0">
     <app-navbar></app-navbar>
 
-    <main class="flex-1 overflow-y-auto p-6 space-y-6">
-
-      @if (mensajeExito()) {
-        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
-          <span class="material-symbols-outlined text-emerald-600 text-lg">check_circle</span>
-          <span>{{ mensajeExito() }}</span>
-        </div>
-      }
-
-      @if (mensajeError()) {
-        <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-center gap-2">
-          <span class="material-symbols-outlined text-red-600 text-lg">error</span>
-          <span>{{ mensajeError() }}</span>
-        </div>
-      }
-
+    <main class="flex-1 overflow-y-auto p-6 md:p-8">
       <!-- Encabezado -->
-      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
-          <h1 class="text-xl font-bold text-[#051F20]">Catálogo de Materias</h1>
-          <p class="text-xs text-gray-500 mt-0.5">
-            Asignaturas disponibles para la programación de sesiones de tutoría.
-          </p>
+          <h1 class="text-2xl font-bold text-[#051F20] tracking-tight">Catálogo de Asignaturas</h1>
+          <p class="text-sm text-gray-500 mt-1">Gestión de materias asociadas a programas académicos y niveles de semestre</p>
         </div>
+
         <button (click)="abrirModalNuevo()"
-          class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#173831] hover:bg-[#235347] text-white text-xs font-semibold rounded-xl shadow-sm transition-colors cursor-pointer">
-          <span class="material-symbols-outlined text-base">add</span>
-          <span>Nueva Materia</span>
+          class="flex items-center gap-2 px-4 py-2 bg-[#173831] hover:bg-[#235347] text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-sm">add</span>
+          <span>Nueva Asignatura</span>
         </button>
       </div>
 
-      <!-- Tabla de Materias -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <!-- Notificaciones -->
+      <div *ngIf="mensajeExito()" class="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm">check_circle</span>
+        <span>{{ mensajeExito() }}</span>
+      </div>
+      <div *ngIf="mensajeError()" class="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm">error</span>
+        <span>{{ mensajeError() }}</span>
+      </div>
+
+      <!-- Barra de Filtros -->
+      <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-xs mb-6 flex flex-wrap gap-4 items-center">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-gray-600">Filtrar por Carrera:</span>
+          <select [value]="filtroPrograma()" (change)="filtroPrograma.set($any($event.target).value)"
+            class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#173831] bg-white">
+            <option value="TODOS">Todos los Programas</option>
+            <option *ngFor="let p of programas()" [value]="p.id">{{ p.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-gray-600">Semestre:</span>
+          <select [value]="filtroSemestre()" (change)="filtroSemestre.set($any($event.target).value)"
+            class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#173831] bg-white">
+            <option value="TODOS">Todos los Semestres</option>
+            <option *ngFor="let s of [1,2,3,4,5,6,7,8,9,10]" [value]="s">Semestre {{ s }}</option>
+          </select>
+        </div>
+
+        <div class="ml-auto text-xs text-gray-400">
+          Mostrando {{ materiasFiltradas().length }} de {{ materias().length }} materias
+        </div>
+      </div>
+
+      <!-- TABLA DE MATERIAS -->
+      <div class="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
-            <thead>
-              <tr class="bg-gray-50/70 border-b border-gray-100 text-gray-500 font-semibold uppercase tracking-wider text-[10px]">
-                <th class="py-3 px-4">ID</th>
-                <th class="py-3 px-4">Nombre de Asignatura</th>
-                <th class="py-3 px-4">Descripción</th>
-                <th class="py-3 px-4">Estado</th>
-                <th class="py-3 px-4 text-right">Acciones</th>
+            <thead class="bg-gray-50 border-b border-gray-100 text-gray-500 uppercase tracking-wider font-semibold">
+              <tr>
+                <th class="px-6 py-3">Código</th>
+                <th class="px-6 py-3">Asignatura</th>
+                <th class="px-6 py-3">Programa / Carrera</th>
+                <th class="px-6 py-3 text-center">Nivel Malla</th>
+                <th class="px-6 py-3 text-center">Créditos</th>
+                <th class="px-6 py-3">Estado</th>
+                <th class="px-6 py-3 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
-              @if (cargando()) {
-                <tr>
-                  <td colspan="5" class="py-12 text-center text-gray-400">
-                    <div class="flex items-center justify-center gap-2">
-                      <span class="material-symbols-outlined animate-spin">progress_activity</span>
-                      <span>Cargando materias...</span>
-                    </div>
-                  </td>
-                </tr>
-              } @else if (materias().length === 0) {
-                <tr>
-                  <td colspan="5" class="py-12 text-center text-gray-400">
-                    No hay materias registradas en el catálogo.
-                  </td>
-                </tr>
-              } @else {
-                @for (m of materias(); track m.id) {
-                  <tr class="hover:bg-gray-50/50 transition-colors">
-                    <td class="py-3 px-4 font-mono font-bold text-[#051F20]">#{{ m.id }}</td>
-                    <td class="py-3 px-4 font-bold text-[#051F20]">{{ m.nombre }}</td>
-                    <td class="py-3 px-4 text-gray-500 text-[11px] max-w-xs">
-                      {{ m.descripcion || 'Sin descripción' }}
-                    </td>
-                    <td class="py-3 px-4">
-                      @if (m.estado) {
-                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-                          <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Activa
-                        </span>
-                      } @else {
-                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-400">
-                          <span class="w-2 h-2 rounded-full bg-gray-300"></span> Inactiva
-                        </span>
-                      }
-                    </td>
-                    <td class="py-3 px-4 text-right">
-                      <div class="inline-flex items-center gap-1">
-                        <button (click)="abrirModalEditar(m)"
-                          title="Editar materia"
-                          class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer">
-                          <span class="material-symbols-outlined text-lg">edit</span>
-                        </button>
-                        <button (click)="eliminarMateria(m)"
-                          title="Eliminar materia"
-                          class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
-                          <span class="material-symbols-outlined text-lg">delete</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              }
+            <tbody class="divide-y divide-gray-100 text-gray-700">
+              <tr *ngFor="let m of materiasFiltradas()" class="hover:bg-gray-50/50 transition-colors">
+                <td class="px-6 py-4 font-mono font-bold text-[#173831]">{{ m.codigo }}</td>
+                <td class="px-6 py-4">
+                  <div class="font-semibold text-gray-900">{{ m.nombre }}</div>
+                  <div class="text-[11px] text-gray-400 truncate max-w-xs">{{ m.descripcion || 'Sin descripción' }}</div>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 bg-[#DBF0DD]/60 text-[#173831] px-2.5 py-1 rounded-md font-medium text-[11px]">
+                    <span class="material-symbols-outlined text-xs">school</span>
+                    {{ m.programa?.nombre || 'General' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span class="px-2 py-0.5 bg-gray-100 text-gray-800 rounded font-semibold text-[11px]">
+                    Sem. {{ m.semestre }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-center font-semibold text-gray-600">
+                  {{ m.creditos || 3 }}
+                </td>
+                <td class="px-6 py-4">
+                  <span [class.bg-emerald-50]="m.estado" [class.text-emerald-700]="m.estado"
+                        [class.bg-gray-100]="!m.estado" [class.text-gray-600]="!m.estado"
+                        class="px-2.5 py-1 rounded-full text-[11px] font-semibold inline-block">
+                    {{ m.estado ? 'Activa' : 'Inactiva' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right space-x-2">
+                  <button (click)="abrirModalEditar(m)" class="p-1.5 text-gray-400 hover:text-[#173831] hover:bg-gray-100 rounded-md transition-colors cursor-pointer" title="Editar">
+                    <span class="material-symbols-outlined text-base">edit</span>
+                  </button>
+                  <button (click)="eliminarMateria(m)" class="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer" title="Eliminar">
+                    <span class="material-symbols-outlined text-base">delete</span>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="materiasFiltradas().length === 0">
+                <td colspan="7" class="px-6 py-8 text-center text-gray-400">No se encontraron asignaturas con los filtros aplicados.</td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
-
     </main>
   </div>
 </div>
 
-<!-- Modal Nueva / Editar Materia -->
-@if (modalAbierto()) {
-  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-gray-100 animate-in fade-in duration-200">
-      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
-        <h2 class="text-lg font-bold text-[#051F20]">
-          {{ editandoId() ? 'Editar Materia' : 'Nueva Materia' }}
-        </h2>
-        <button (click)="cerrarModal()" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
+<!-- MODAL CREAR / EDITAR MATERIA CON CASCADA -->
+<div *ngIf="modalAbierto()" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-xl border border-gray-100 w-full max-w-lg overflow-hidden">
+    <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+      <h3 class="font-bold text-sm text-[#051F20]">
+        {{ editandoId() ? 'Editar Asignatura' : 'Nueva Asignatura Universitaria' }}
+      </h3>
+      <button (click)="cerrarModal()" class="text-gray-400 hover:text-gray-600 cursor-pointer">
+        <span class="material-symbols-outlined text-lg">close</span>
+      </button>
+    </div>
 
-      <form [formGroup]="form" (ngSubmit)="guardarMateria()" class="space-y-4 pt-4">
-        <div class="space-y-1">
-          <label class="block text-[11px] font-bold text-[#051F20]">Nombre de la Asignatura</label>
-          <input type="text" formControlName="nombre" placeholder="Cálculo Diferencial"
-            class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347]" />
-          @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
-            <p class="text-[10px] text-red-500">El nombre es obligatorio (mínimo 3 caracteres).</p>
+    <form [formGroup]="form" (ngSubmit)="guardarMateria()" class="p-6 space-y-4 text-xs">
+      <!-- 1. SELECTOR EN CASCADA: FACULTAD -> PROGRAMA -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">1. Facultad Perteneciente *</label>
+          <select formControlName="facultadId" (change)="onFacultadChange()"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+            <option value="" disabled>Seleccione facultad...</option>
+            @for (f of facultades(); track f.id) {
+              <option [value]="f.id">{{ f.nombre }} ({{ f.codigo }})</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">2. Programa / Carrera *</label>
+          <select formControlName="programaId"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+            <option value="" disabled>
+              {{ !facultadSeleccionadaModal() ? 'Primero seleccione una facultad...' : (programasParaModal().length === 0 ? 'No hay carreras en esta facultad' : 'Seleccione programa de esta facultad...') }}
+            </option>
+            @for (p of programasParaModal(); track p.id) {
+              <option [value]="p.id">{{ p.nombre }}</option>
+            }
+          </select>
+          @if (facultadSeleccionadaModal() && programasParaModal().length === 0) {
+            <p class="text-[10px] text-amber-600 mt-1">⚠️ Esta facultad no tiene programas académicos registrados.</p>
           }
         </div>
+      </div>
 
-        <div class="space-y-1">
-          <label class="block text-[11px] font-bold text-[#051F20]">Descripción</label>
-          <textarea formControlName="descripcion" rows="3" placeholder="Descripción de contenidos o temas cubiertos..."
-            class="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#235347]"></textarea>
+      <!-- 2. SEMESTRE Y CRÉDITOS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">3. Semestre Malla *</label>
+          <select formControlName="semestre"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] bg-white">
+            <option *ngFor="let s of [1,2,3,4,5,6,7,8,9,10]" [value]="s">Semestre {{ s }}</option>
+          </select>
         </div>
 
-        <div class="pt-2 flex items-center gap-2">
-          <input type="checkbox" id="materia-activa" formControlName="estado"
-                 class="w-4 h-4 rounded border-gray-300 accent-[#173831] cursor-pointer" />
-          <label for="materia-activa" class="text-xs text-gray-700 cursor-pointer font-semibold">Materia activa para tutorías</label>
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Código Asignatura *</label>
+          <input type="text" formControlName="codigo" placeholder="Ej: SIS-401"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831] uppercase">
         </div>
 
-        <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-2">
-          <button type="button" (click)="cerrarModal()"
-            class="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer">
-            Cancelar
-          </button>
-          <button type="submit"
-            class="px-5 py-2 rounded-xl text-xs font-semibold bg-[#173831] hover:bg-[#235347] text-white shadow-sm transition-colors cursor-pointer">
-            {{ editandoId() ? 'Actualizar' : 'Crear Materia' }}
-          </button>
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Créditos *</label>
+          <input type="number" formControlName="creditos" min="1" max="10"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
         </div>
-      </form>
-    </div>
+      </div>
+
+      <!-- 3. NOMBRE DE LA MATERIA -->
+      <div>
+        <label class="block font-semibold text-gray-700 mb-1">Nombre de la Asignatura *</label>
+        <input type="text" formControlName="nombre" placeholder="Ej: Bases de Datos I"
+          class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]">
+      </div>
+
+      <!-- 4. DESCRIPCIÓN -->
+      <div>
+        <label class="block font-semibold text-gray-700 mb-1">Descripción / Temario</label>
+        <textarea formControlName="descripcion" rows="2" placeholder="Resumen de contenidos de la asignatura"
+          class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#173831]"></textarea>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end gap-2">
+        <button type="button" (click)="cerrarModal()"
+          class="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 cursor-pointer">
+          Cancelar
+        </button>
+        <button type="submit"
+          class="px-4 py-2 bg-[#173831] hover:bg-[#235347] text-white font-semibold rounded-lg shadow-sm cursor-pointer">
+          Guardar Asignatura
+        </button>
+      </div>
+    </form>
   </div>
-}
+</div>

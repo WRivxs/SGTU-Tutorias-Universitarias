@@ -59,9 +59,14 @@ export class AuthService {
 
   redirigirPorRol(): void {
     const rol = this._usuario()?.rol;
-    if (rol === 'ADMINISTRADOR') this.router.navigate(['/admin/dashboard']);
-    else if (rol === 'TUTOR') this.router.navigate(['/tutor/mis-tutorias']);
-    else if (rol === 'ESTUDIANTE') this.router.navigate(['/estudiante/buscar-tutorias']);
-    else this.router.navigate(['/login']);
+    if (rol === 'ADMINISTRADOR') {
+      this.router.navigate(['/admin/dashboard']);
+    } else if (rol === 'DOCENTE' || rol === 'TUTOR') {
+      this.router.navigate(['/tutor/mis-tutorias']);
+    } else if (rol === 'ESTUDIANTE') {
+      this.router.navigate(['/estudiante/buscar-tutorias']);
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 }

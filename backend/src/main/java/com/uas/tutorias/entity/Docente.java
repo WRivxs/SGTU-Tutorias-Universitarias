@@ -6,17 +6,20 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
-@Table(name = "tutores")
+@Table(name = "docentes")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Tutor {
+public class Docente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_tutor")
+    @Column(name = "id_docente")
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -24,12 +27,21 @@ public class Tutor {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password"})
     private Usuario usuario;
 
-    @Column(length = 100)
+    @Column(length = 150)
     private String especialidad;
 
     @Column(length = 255)
     private String descripcion;
 
-    @Column(length = 100)
+    @Column(length = 150)
     private String disponibilidad;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "docente_materias",
+            joinColumns = @JoinColumn(name = "docente_id"),
+            inverseJoinColumns = @JoinColumn(name = "materia_id")
+    )
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Set<Materia> materias = new HashSet<>();
 }
