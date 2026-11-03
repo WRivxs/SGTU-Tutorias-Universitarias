@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="sgtuGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#051F20"/>
+      <stop offset="100%" stop-color="#173831"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Fondo Squircle Institucional -->
+  <rect width="512" height="512" rx="128" fill="url(#sgtuGrad)"/>
+  <rect x="12" y="12" width="488" height="488" rx="116" fill="none" stroke="#8CB79B" stroke-width="6" stroke-opacity="0.5"/>
+
+  <!-- Birrete Universitario -->
+  <g filter="url(#shadow)">
+    <!-- Diamante Superior -->
+    <polygon points="256,120 440,195 256,270 72,195" fill="#DBF0DD"/>
+    <!-- Relieve Diamante -->
+    <polygon points="256,120 440,195 256,215 72,195" fill="#FFFFFF" opacity="0.6"/>
+    <!-- Gorra Inferior -->
+    <path d="M 160,235 L 160,305 C 160,335 352,335 352,305 L 352,235 Z" fill="#8CB79B"/>
+    <!-- Borla Dorada -->
+    <line x1="256" y1="195" x2="385" y2="245" stroke="#FACC15" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="385" cy="255" r="14" fill="#FACC15"/>
+    <line x1="385" y1="260" x2="385" y2="295" stroke="#FACC15" stroke-width="12" stroke-linecap="round"/>
+  </g>
+
+  <!-- Sigla SGTU -->
+  <text x="256" y="415" text-anchor="middle" font-family="'Manrope', 'Segoe UI', sans-serif" font-weight="900" font-size="68" fill="#DBF0DD" letter-spacing="6">SGTU</text>
+  <text x="256" y="445" text-anchor="middle" font-family="'Manrope', 'Segoe UI', sans-serif" font-weight="600" font-size="19" fill="#8CB79B" letter-spacing="3">TUTORÍAS</text>
+</svg>

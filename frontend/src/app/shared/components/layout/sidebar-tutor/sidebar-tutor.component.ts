@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { LayoutService } from '../../../../core/services/layout.service';
+import { PwaService } from '../../../../core/services/pwa.service';
 
 @Component({
   selector: 'app-sidebar-tutor',
@@ -84,8 +85,17 @@ import { LayoutService } from '../../../../core/services/layout.service';
         </div>
       </div>
 
-      <!-- Pie del Sidebar: Cerrar Sesion elegante, sutil y estilizado -->
-      <div class="p-3 pb-8 md:pb-4 border-t border-white/10 shrink-0">
+      <!-- Pie del Sidebar: Boton PWA + Cerrar Sesion -->
+      <div class="p-3 pb-8 md:pb-4 border-t border-white/10 shrink-0 flex flex-col gap-1">
+        @if (!pwaService.estaInstalada()) {
+          <button
+            type="button"
+            (click)="pwaService.solicitarInstalacion()"
+            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-[#DBF0DD] hover:bg-white/10 active:bg-white/15 transition-all cursor-pointer font-medium">
+            <span class="material-symbols-outlined text-lg text-[#8CB79B]">install_mobile</span>
+            <span>Instalar App SGTU</span>
+          </button>
+        }
         <button
           type="button"
           (click)="logout()"
@@ -99,6 +109,7 @@ import { LayoutService } from '../../../../core/services/layout.service';
 })
 export class SidebarTutorComponent {
   public layoutService = inject(LayoutService);
+  public pwaService = inject(PwaService);
   private authService = inject(AuthService);
 
   logout(): void {

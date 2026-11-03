@@ -4,14 +4,46 @@
   <meta charset="utf-8">
   <title>SGTU — Sistema de Gestión de Tutorías Universitarias</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <!-- Material Symbols (íconos de Stitch) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+  <meta name="description" content="Plataforma universitaria para la reserva, gestión y seguimiento de asesorías académicas.">
+  
+  <!-- Configuración PWA / Manifiesto -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#051F20">
+  <meta name="mobile-web-app-capable" content="yes">
+  
+  <!-- Configuración para iOS Safari -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SGTU Tutorías">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Material Symbols (Iconos de Google) -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
   <!-- Fuente Manrope -->
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
 </head>
-<body class="bg-white antialiased">
+<body class="bg-[#EEF2F6] text-slate-800 antialiased selection:bg-[#DBF0DD] selection:text-[#173831]">
   <app-root></app-root>
+
+  <!-- Registro del Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((reg) => {
+            console.log('[PWA] Service Worker registrado exitosamente en ámbito:', reg.scope);
+          })
+          .catch((err) => {
+            console.warn('[PWA] Error al registrar Service Worker:', err);
+          });
+      });
+    }
+  </script>
 </body>
 </html>

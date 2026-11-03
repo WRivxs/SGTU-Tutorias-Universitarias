@@ -1,0 +1,53 @@
+{
+  "name": "SGTU - Sistema de Gestión de Tutorías Universitarias",
+  "short_name": "SGTU Tutorías",
+  "description": "Plataforma institucional para la reserva, gestión y seguimiento de asesorías académicas universitarias.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#051F20",
+  "theme_color": "#051F20",
+  "lang": "es",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "shortcuts": [
+    {
+      "name": "Buscar Tutorías",
+      "short_name": "Tutorías",
+      "description": "Explorar catálogo de asesorías",
+      "url": "/estudiante/buscar-tutorias",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mis Solicitudes",
+      "short_name": "Solicitudes",
+      "description": "Revisar estado de mis solicitudes",
+      "url": "/estudiante/mis-solicitudes",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
