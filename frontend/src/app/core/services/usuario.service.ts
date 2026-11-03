@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-const API_URL = 'http://localhost:8080/api/usuarios';
+const API_URL = 'https://sgtu-tutorias-universitarias.onrender.com/api/usuarios';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {

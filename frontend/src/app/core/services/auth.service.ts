@@ -5,7 +5,7 @@ import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { AuthResponse, LoginRequest, UsuarioSesion } from '../../shared/models/auth.model';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'https://sgtu-tutorias-universitarias.onrender.com/api';
 const TOKEN_KEY = 'sgtu_token';
 const USER_KEY = 'sgtu_user';
 

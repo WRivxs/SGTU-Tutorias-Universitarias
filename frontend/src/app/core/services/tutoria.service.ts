@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Tutoria } from '../../shared/models/tutoria.model';
 
-const API_URL = 'http://localhost:8080/api/tutorias';
+const API_URL = 'https://sgtu-tutorias-universitarias.onrender.com/api/tutorias';
 
 export interface FiltrosTutoria {
   programaId?: number;

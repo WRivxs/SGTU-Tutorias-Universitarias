@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Facultad } from '../../shared/models/facultad.model';
 
-const API_URL = 'http://localhost:8080/api/facultades';
+const API_URL = 'https://sgtu-tutorias-universitarias.onrender.com/api/facultades';
 
 @Injectable({ providedIn: 'root' })
 export class FacultadService {

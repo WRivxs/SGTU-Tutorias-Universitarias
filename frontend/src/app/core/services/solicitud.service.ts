@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Solicitud } from '../../shared/models/solicitud.model';
 
-const API_URL = 'http://localhost:8080/api/solicitudes';
+const API_URL = 'https://sgtu-tutorias-universitarias.onrender.com/api/solicitudes';
 
 @Injectable({ providedIn: 'root' })
 export class SolicitudService {

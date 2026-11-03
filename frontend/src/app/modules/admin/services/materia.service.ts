@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Materia } from '../../../shared/models/materia.model';
 
-const API_URL = 'http://localhost:8080/api/materias';
+const API_URL = 'https://sgtu-tutorias-universitarias.onrender.com/api/materias';
 
 @Injectable({ providedIn: 'root' })
 export class MateriaService {

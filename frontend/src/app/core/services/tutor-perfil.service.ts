@@ -18,7 +18,7 @@ export interface TutorPerfil {
 }
 
 // Actualizado a /api/docentes para sincronizar con el nuevo modelo relacional
-const API_URL = 'http://localhost:8080/api/docentes';
+const API_URL = 'https://sgtu-tutorias-universitarias.onrender.com/api/docentes';
 
 @Injectable({ providedIn: 'root' })
 export class TutorPerfilService {
