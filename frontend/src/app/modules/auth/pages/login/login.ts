@@ -4,6 +4,13 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
 
+export interface EstudianteDemo {
+  id: number;
+  nombre: string;
+  semestre: string;
+  correo: string;
+}
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -21,6 +28,17 @@ export class Login implements OnInit {
   cargando = signal(false);
   errorMensaje = signal<string | null>(null);
 
+  // Lista de 7 estudiantes registrados en la base de datos para pruebas simultaneas
+  estudiantesDemo: EstudianteDemo[] = [
+    { id: 1, nombre: 'Ana Martínez', semestre: '2° Sem', correo: 'ana.estudiante@tutorias.com' },
+    { id: 2, nombre: 'Eduardo Bettin', semestre: '5° Sem', correo: 'eduardo.estudiante@tutorias.com' },
+    { id: 3, nombre: 'Laura Gómez', semestre: '3° Sem', correo: 'laura.estudiante@tutorias.com' },
+    { id: 4, nombre: 'Carlos Pérez', semestre: '1° Sem', correo: 'carlos.estudiante@tutorias.com' },
+    { id: 5, nombre: 'Valentina Díaz', semestre: '4° Sem', correo: 'valentina.estudiante@tutorias.com' },
+    { id: 6, nombre: 'Daniel Romero', semestre: '6° Sem', correo: 'daniel.estudiante@tutorias.com' },
+    { id: 7, nombre: 'Sofía Castro', semestre: '3° Sem', correo: 'sofia.estudiante@tutorias.com' }
+  ];
+
   form = this.fb.group({
     correo: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]]
@@ -33,43 +51,31 @@ export class Login implements OnInit {
       return;
     }
 
-    // Auto-login por parámetro de URL (ej: /login?demo=estudiante o ?demo=tutor o ?demo=admin)
+    // Auto-login por parámetro de URL (?estudiante=1 .. 7 o ?demo=estudiante)
+    const paramEst = this.route.snapshot.queryParamMap.get('estudiante');
     const demo = this.route.snapshot.queryParamMap.get('demo');
-    if (demo === 'estudiante' || demo === 'student') {
-      setTimeout(() => this.iniciarSesionDemo('estudiante'), 300);
-    } else if (demo === 'tutor' || demo === 'docente') {
-      setTimeout(() => this.iniciarSesionDemo('tutor'), 300);
-    } else if (demo === 'admin') {
-      setTimeout(() => this.iniciarSesionDemo('admin'), 300);
+
+    if (paramEst) {
+      const idx = parseInt(paramEst, 10);
+      const est = this.estudiantesDemo.find(e => e.id === idx) || this.estudiantesDemo[0];
+      setTimeout(() => this.iniciarComoEstudiante(est), 200);
+    } else if (demo === 'estudiante' || demo === 'student') {
+      setTimeout(() => this.iniciarComoEstudiante(this.estudiantesDemo[0]), 200);
     }
   }
 
-  iniciarSesionDemo(rol: 'estudiante' | 'tutor' | 'admin'): void {
+  iniciarComoEstudiante(est: EstudianteDemo): void {
     if (this.cargando()) return;
-
-    let correo = '';
-    let password = '';
-
-    if (rol === 'estudiante') {
-      correo = 'ana.estudiante@tutorias.com';
-      password = 'Estudiante123*';
-      this.tabActivo.set('student');
-    } else if (rol === 'tutor') {
-      correo = 'wadid.docente@tutorias.com';
-      password = 'Docente123*';
-      this.tabActivo.set('tutor');
-    } else if (rol === 'admin') {
-      correo = 'admin@tutorias.com';
-      password = 'Admin123*';
-    }
-
-    this.form.patchValue({ correo, password });
+    this.tabActivo.set('student');
+    this.form.patchValue({
+      correo: est.correo,
+      password: 'Estudiante123*'
+    });
     this.onSubmit();
   }
 
   cambiarTab(tab: 'student' | 'tutor'): void {
     this.tabActivo.set(tab);
-    const placeholder = tab === 'student' ? 'estudiante@universidad.edu.co' : 'docente.tutor@universidad.edu.co';
     this.form.get('correo')?.setValue('');
   }
 
