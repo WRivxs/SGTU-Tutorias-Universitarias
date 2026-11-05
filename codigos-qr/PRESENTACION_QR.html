@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Códigos QR - SGTU Proyecto de Aula</title>
+  <title>Acceso Estudiantes SGTU - Proyecto de Aula</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
     }
     .header {
       text-align: center;
-      margin-bottom: 35px;
+      margin-bottom: 25px;
       max-width: 800px;
     }
     .badge {
@@ -30,108 +30,150 @@
       color: #8CB79B;
       padding: 6px 16px;
       border-radius: 999px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
       border: 1px solid #8CB79B40;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     h1 {
-      font-size: 32px;
+      font-size: 30px;
       font-weight: 800;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       color: #ffffff;
     }
     p.sub {
       color: #DBF0DD;
-      font-size: 15px;
+      font-size: 14px;
       opacity: 0.9;
     }
-    .cards-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 25px;
-      width: 100%;
-      max-width: 1050px;
-    }
-    .qr-card {
+    .main-container {
+      display: flex;
+      flex-direction: row;
       background: #ffffff;
-      color: #051F20;
-      border-radius: 20px;
-      padding: 24px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+      border-radius: 24px;
+      overflow: hidden;
+      max-width: 950px;
+      width: 100%;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
       border: 2px solid #8CB79B;
+    }
+    .qr-column {
+      background: #f8fafc;
+      padding: 35px 30px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: transform 0.2s;
+      justify-content: center;
+      text-align: center;
+      border-right: 1px solid #e2e8f0;
+      flex: 1;
     }
-    .qr-card:hover {
-      transform: translateY(-4px);
+    .qr-column img {
+      width: 260px;
+      height: 260px;
+      border-radius: 16px;
+      border: 2px solid #8CB79B;
+      padding: 8px;
+      background: #ffffff;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      margin-bottom: 15px;
     }
-    .qr-card.highlight {
-      border: 3px solid #10b981;
-      position: relative;
+    .qr-hint {
+      color: #173831;
+      font-size: 13px;
+      font-weight: 700;
     }
-    .tag-highlight {
-      position: absolute;
-      top: -12px;
-      background: #10b981;
-      color: #ffffff;
+    .qr-url {
+      color: #64748b;
       font-size: 11px;
-      font-weight: 800;
-      padding: 3px 12px;
-      border-radius: 20px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      margin-top: 4px;
+      font-family: monospace;
     }
-    .qr-title {
-      font-size: 17px;
-      font-weight: 800;
-      margin-top: 10px;
-      margin-bottom: 6px;
+    .info-column {
+      padding: 35px 35px;
+      flex: 1.2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       color: #051F20;
     }
-    .qr-desc {
-      font-size: 12px;
-      color: #555555;
-      margin-bottom: 15px;
-      min-height: 32px;
+    .info-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #051F20;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .qr-img {
-      width: 220px;
-      height: 220px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      padding: 6px;
-      background: white;
+    .info-sub {
+      font-size: 12.5px;
+      color: #64748b;
+      margin-bottom: 18px;
+      line-height: 1.4;
     }
-    .btn-link {
-      margin-top: 15px;
-      display: inline-block;
+    .students-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .student-card {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 8px 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #173831;
+      color: #8CB79B;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
       font-size: 11px;
-      color: #173831;
+      flex-shrink: 0;
+    }
+    .st-name {
+      font-size: 12px;
       font-weight: 700;
-      text-decoration: none;
-      word-break: break-all;
-      background: #DBF0DD50;
-      padding: 6px 12px;
-      border-radius: 8px;
-      border: 1px dashed #8CB79B;
+      color: #0f172a;
+    }
+    .st-sem {
+      font-size: 10px;
+      color: #235347;
+      font-weight: 600;
+    }
+    .step-banner {
+      background: #DBF0DD;
+      border: 1px solid #8CB79B;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 11.5px;
+      color: #051F20;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .footer-note {
-      margin-top: 35px;
+      margin-top: 20px;
       text-align: center;
       color: #8CB79B;
-      font-size: 13px;
+      font-size: 12px;
     }
-    @media print {
-      body { background: white; color: black; }
-      .qr-card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
-      h1 { color: #051F20; }
-      p.sub { color: #555; }
+    @media (max-width: 768px) {
+      .main-container { flex-direction: column; }
+      .qr-column { border-right: none; border-bottom: 1px solid #e2e8f0; }
+      .students-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -139,41 +181,96 @@
 
   <div class="header">
     <div class="badge">SGTU • PROYECTO DE AULA 2026</div>
-    <h1>Escanea para Probar la Plataforma</h1>
-    <p class="sub">Apunta la cámara de tu celular a cualquiera de los códigos QR para ingresar inmediatamente</p>
+    <h1>Acceso Estudiantil en Vivo</h1>
+    <p class="sub">Escanea el código QR con tu celular para ingresar inmediatamente al portal del estudiante</p>
   </div>
 
-  <div class="cards-container">
+  <div class="main-container">
     
-    <!-- QR 1: Estudiante Auto -->
-    <div class="qr-card highlight">
-      <div class="tag-highlight">⭐ Más Recomendado</div>
-      <h3 class="qr-title">Acceso Estudiante (1-Clic)</h3>
-      <p class="qr-desc">Auto-inicia sesión como <b>Ana Martínez</b> (Estudiante de 2° Semestre) sin pedir contraseñas.</p>
-      <img class="qr-img" src="./qr-sgtu-auto-estudiante.png" alt="QR Acceso Estudiante">
-      <a class="btn-link" href="https://sgtu-tutorias-universitarias.vercel.app/login?demo=estudiante" target="_blank">Abrir Enlace</a>
+    <!-- Columna QR -->
+    <div class="qr-column">
+      <img src="./qr-sgtu-estudiantes.png" alt="Código QR SGTU Estudiantes">
+      <div class="qr-hint">📱 Apunta la cámara de tu celular</div>
+      <div class="qr-url">sgtu-tutorias-universitarias.vercel.app</div>
     </div>
 
-    <!-- QR 2: Docente Auto -->
-    <div class="qr-card">
-      <h3 class="qr-title">Acceso Docente (1-Clic)</h3>
-      <p class="qr-desc">Auto-inicia sesión como <b>Prof. Wadid Rivas</b> para ver la agenda y tutorías programadas.</p>
-      <img class="qr-img" src="./qr-sgtu-auto-docente.png" alt="QR Acceso Docente">
-      <a class="btn-link" href="https://sgtu-tutorias-universitarias.vercel.app/login?demo=tutor" target="_blank">Abrir Enlace</a>
-    </div>
+    <!-- Columna Info -->
+    <div class="info-column">
+      <div class="info-title">
+        <span>⚡ Acceso Rápido (1 Clic)</span>
+      </div>
+      <p class="info-sub">
+        Al abrir el enlace, toca el nombre de cualquiera de los siguientes estudiantes para entrar <b>sin escribir contraseña</b>:
+      </p>
 
-    <!-- QR 3: Portal General -->
-    <div class="qr-card">
-      <h3 class="qr-title">Portal Principal SGTU</h3>
-      <p class="qr-desc">Abre el Login Oficial con los botones de prueba rápida y opción de instalar la PWA.</p>
-      <img class="qr-img" src="./qr-sgtu-portal-general.png" alt="QR Portal General">
-      <a class="btn-link" href="https://sgtu-tutorias-universitarias.vercel.app" target="_blank">sgtu-tutorias-universitarias.vercel.app</a>
+      <div class="students-grid">
+        <div class="student-card">
+          <div class="avatar">A</div>
+          <div>
+            <div class="st-name">Ana Martínez</div>
+            <div class="st-sem">2° Semestre • Sistemas</div>
+          </div>
+        </div>
+
+        <div class="student-card">
+          <div class="avatar">E</div>
+          <div>
+            <div class="st-name">Eduardo Bettin</div>
+            <div class="st-sem">5° Semestre • Sistemas</div>
+          </div>
+        </div>
+
+        <div class="student-card">
+          <div class="avatar">L</div>
+          <div>
+            <div class="st-name">Laura Gómez</div>
+            <div class="st-sem">3° Semestre • Sistemas</div>
+          </div>
+        </div>
+
+        <div class="student-card">
+          <div class="avatar">C</div>
+          <div>
+            <div class="st-name">Carlos Pérez</div>
+            <div class="st-sem">1° Semestre • Sistemas</div>
+          </div>
+        </div>
+
+        <div class="student-card">
+          <div class="avatar">V</div>
+          <div>
+            <div class="st-name">Valentina Díaz</div>
+            <div class="st-sem">4° Semestre • Sistemas</div>
+          </div>
+        </div>
+
+        <div class="student-card">
+          <div class="avatar">D</div>
+          <div>
+            <div class="st-name">Daniel Romero</div>
+            <div class="st-sem">6° Semestre • Sistemas</div>
+          </div>
+        </div>
+
+        <div class="student-card" style="grid-column: span 2;">
+          <div class="avatar">S</div>
+          <div>
+            <div class="st-name">Sofía Castro</div>
+            <div class="st-sem">3° Semestre • Sistemas</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-banner">
+        <span>💡</span>
+        <span><b>Varios evaluadores simultáneos:</b> Cada profesor puede elegir un estudiante distinto para interactuar a la vez.</span>
+      </div>
     </div>
 
   </div>
 
   <div class="footer-note">
-    💡 <b>Tip para la sustentación:</b> Puedes proyectar esta pantalla completa con <b>F11</b> o imprimir esta hoja para que los evaluadores escaneen desde sus puestos.
+    Presiona <b>F11</b> para proyectar en pantalla completa • © 2026 SGTU
   </div>
 
 </body>
