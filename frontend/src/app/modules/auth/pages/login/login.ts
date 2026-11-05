@@ -1,6 +1,6 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
 
@@ -14,6 +14,7 @@ export class Login implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   mostrarPassword = signal(false);
   tabActivo = signal<'student' | 'tutor'>('student');
@@ -29,7 +30,41 @@ export class Login implements OnInit {
     // Si ya está autenticado, redirigir
     if (this.authService.isAuthenticated()) {
       this.authService.redirigirPorRol();
+      return;
     }
+
+    // Auto-login por parámetro de URL (ej: /login?demo=estudiante o ?demo=tutor o ?demo=admin)
+    const demo = this.route.snapshot.queryParamMap.get('demo');
+    if (demo === 'estudiante' || demo === 'student') {
+      setTimeout(() => this.iniciarSesionDemo('estudiante'), 300);
+    } else if (demo === 'tutor' || demo === 'docente') {
+      setTimeout(() => this.iniciarSesionDemo('tutor'), 300);
+    } else if (demo === 'admin') {
+      setTimeout(() => this.iniciarSesionDemo('admin'), 300);
+    }
+  }
+
+  iniciarSesionDemo(rol: 'estudiante' | 'tutor' | 'admin'): void {
+    if (this.cargando()) return;
+
+    let correo = '';
+    let password = '';
+
+    if (rol === 'estudiante') {
+      correo = 'ana.estudiante@tutorias.com';
+      password = 'Estudiante123*';
+      this.tabActivo.set('student');
+    } else if (rol === 'tutor') {
+      correo = 'wadid.docente@tutorias.com';
+      password = 'Docente123*';
+      this.tabActivo.set('tutor');
+    } else if (rol === 'admin') {
+      correo = 'admin@tutorias.com';
+      password = 'Admin123*';
+    }
+
+    this.form.patchValue({ correo, password });
+    this.onSubmit();
   }
 
   cambiarTab(tab: 'student' | 'tutor'): void {

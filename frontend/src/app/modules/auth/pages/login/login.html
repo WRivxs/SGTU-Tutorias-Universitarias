@@ -129,6 +129,48 @@
           </button>
         </div>
 
+        <!-- Acceso Rápido para Evaluadores (1 Clic) -->
+        <div class="p-3 rounded-xl bg-[#DBF0DD]/40 border border-[#8CB79B]/50 shadow-xs space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 text-[#051F20]">
+              <span class="material-symbols-outlined text-[#173831] text-base" style="font-variation-settings:'FILL' 1">bolt</span>
+              <span class="text-[11px] font-bold uppercase tracking-wider">Acceso Rápido Evaluadores</span>
+            </div>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-[#173831] text-[#DBF0DD] font-semibold tracking-wide">1 Clic</span>
+          </div>
+          <p class="text-[10.5px] text-gray-600 leading-snug">
+            Toca un botón para ingresar de inmediato sin escribir credenciales:
+          </p>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              (click)="iniciarSesionDemo('estudiante')"
+              [disabled]="cargando()"
+              class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg bg-white border border-[#8CB79B]/70 hover:border-[#173831] hover:bg-[#DBF0DD]/30 active:scale-[0.98] text-[#051F20] text-[11px] font-bold transition-all shadow-xs cursor-pointer">
+              <span class="material-symbols-outlined text-sm text-[#235347]" style="font-variation-settings:'FILL' 1">school</span>
+              <span>Como Estudiante</span>
+            </button>
+            <button
+              type="button"
+              (click)="iniciarSesionDemo('tutor')"
+              [disabled]="cargando()"
+              class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg bg-white border border-[#8CB79B]/70 hover:border-[#173831] hover:bg-[#DBF0DD]/30 active:scale-[0.98] text-[#051F20] text-[11px] font-bold transition-all shadow-xs cursor-pointer">
+              <span class="material-symbols-outlined text-sm text-[#235347]" style="font-variation-settings:'FILL' 1">co_present</span>
+              <span>Como Docente</span>
+            </button>
+          </div>
+          <div class="pt-0.5 text-center">
+            <button
+              type="button"
+              (click)="iniciarSesionDemo('admin')"
+              [disabled]="cargando()"
+              class="text-[10px] text-[#235347] hover:text-[#051F20] hover:underline font-semibold inline-flex items-center gap-1 cursor-pointer">
+              <span class="material-symbols-outlined text-xs">shield_person</span>
+              <span>Probar como Administrador</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Alerta de error -->
         @if (errorMensaje()) {
           <div class="p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2">
