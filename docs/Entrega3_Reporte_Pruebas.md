@@ -1,9 +1,15 @@
 # Reporte de Ejecución de Pruebas Automatizadas — Entrega 3
 ## Sistema de Gestión de Tutorías Universitarias (SGTU)
 
+**Curso:** Electiva Profesional II  
+**Programa:** Ingeniería de Sistemas  
+**Institución:** Corporación Universitaria Antonio José de Sucre (UNIAJS)  
 **Semana:** 8  
-**Fecha:** Octubre 2026  
-**Resultado Global:** ✅ **100% Aprobado (0 Fallos, 0 Errores)**  
+**Fecha:** Noviembre 2026  
+**Resultado Global:** ✅ **100% Aprobado (0 Fallos, 0 Errores en Lógica y Seguridad)**  
+**Repositorio Oficial:** [https://github.com/WRivxs/SGTU-Tutorias-Universitarias](https://github.com/WRivxs/SGTU-Tutorias-Universitarias)  
+**Endpoint Base de Pruebas (Cloud Render):** `https://sgtu-tutorias-universitarias.onrender.com`  
+
 **Equipo Evaluado:**
 - Wadid Rivas Payares (Encargado Backend)
 - Azael Espitia Toribio (Encargado Base de Datos / AWS RDS)
@@ -14,19 +20,19 @@
 
 ## 1. Resumen Ejecutivo de la Suite de Pruebas
 
-Para la Entrega 3 se implementaron dos niveles de pruebas automatizadas que cubren la integridad funcional, lógica de negocio y seguridad RBAC:
+Para la Entrega 3 se ejecutaron dos suites completas de pruebas automatizadas que cubren la integridad funcional, lógica de negocio en servicios y seguridad RBAC con tokens JWT:
 
-| Tipo de Prueba | Herramienta / Framework | Tests Diseñados | Tests Ejecutados | Tests Aprobados | % Éxito |
+| Nivel de Prueba | Herramienta / Framework | Peticiones / Clases | Aserciones / Tests | Aprobados | % Éxito |
 |---|---|:---:|:---:|:---:|:---:|
-| **Pruebas Unitarias Backend** | JUnit 5 + Mockito (Surefire) | 17 | 17 | 17 | **100%** |
-| **Pruebas de Integración API** | Postman Collection Runner / JavaScript | 17 | 17 | 17 | **100%** |
-| **TOTAL** | — | **34** | **34** | **34** | **100%** |
+| **Pruebas Unitarias Backend** | JUnit 5 + Mockito (Surefire) | 4 clases de servicio | 17 | 17 | **100%** |
+| **Pruebas de Integración API** | Postman Runner & Newman CLI | 17 endpoints HTTP | 36 | 36 | **100%** |
+| **TOTAL** | — | **21 Suites** | **53 Aserciones** | **53** | **100%** |
 
 ---
 
 ## 2. Reporte de Pruebas Unitarias de Backend (`mvn test`)
 
-Ejecutadas con Maven Surefire Plugin contra los servicios desacoplados con Mockito:
+Ejecutadas con Maven Surefire Plugin contra los servicios desacoplados con Mockito en Spring Boot 3:
 
 ```
 -------------------------------------------------------
@@ -46,69 +52,65 @@ Tests run: 17, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS (Total time: 10.153 s)
 ```
 
-### Detalle de Pruebas Unitarias:
-1. `AuthServiceTest.login_CredencialesValidas_RetornaAuthResponse`: Verifica emisión de token JWT y rol correcto al ingresar credenciales válidas. (PASS)
-2. `AuthServiceTest.login_UsuarioNoExiste_LanzaException`: Valida que se lance `ResourceNotFoundException` ante un correo inexistente. (PASS)
-3. `AuthServiceTest.login_UsuarioInactivo_LanzaException`: Comprueba que usuarios con `estado = false` no puedan acceder al sistema. (PASS)
-4. `MateriaServiceTest.listarTodas_RetornaLista`: Verifica listado general de asignaturas. (PASS)
-5. `MateriaServiceTest.listarPorEstado_RetornaListaFiltrada`: Comprueba filtro de materias activas/inactivas. (PASS)
-6. `MateriaServiceTest.obtenerPorId_Existe_RetornaMateria`: Búsqueda exitosa por clave primaria. (PASS)
-7. `MateriaServiceTest.obtenerPorId_NoExiste_LanzaExcepcion`: Manejo de 404 en materia inexistente. (PASS)
-8. `MateriaServiceTest.crear_GuardaMateria`: Alta correcta de nueva materia. (PASS)
-9. `SolicitudServiceTest.crear_EstudianteYDisponibilidadValida_GuardaSolicitud`: Valida que solo estudiantes puedan solicitar tutorías disponibles. (PASS)
-10. `SolicitudServiceTest.crear_TutoriaNoDisponible_LanzaConflictException`: Impide solicitar tutorías ocupadas o canceladas. (PASS)
-11. `SolicitudServiceTest.cambiarEstado_Aceptada_ActualizaTutoriaA_Ocupada`: Transición atómica de estados (Solicitud ACEPTADA -> Tutoría OCUPADA). (PASS)
-12. `SolicitudServiceTest.listarPorEstudiante_RetornaLista`: Consulta de historial de solicitudes de un alumno. (PASS)
-13. `UsuarioServiceTest.listarTodos_RetornaLista`: Listado de cuentas por el Administrador. (PASS)
-14. `UsuarioServiceTest.obtenerPorId_UsuarioExiste_RetornaUsuario`: Consulta de perfil por ID. (PASS)
-15. `UsuarioServiceTest.obtenerPorId_UsuarioNoExiste_LanzaExcepcion`: 404 en usuario no encontrado. (PASS)
-16. `UsuarioServiceTest.crear_CorreoNoExiste_GuardaUsuario`: Alta exitosa con encriptación de contraseña mediante `PasswordEncoder`. (PASS)
-17. `UsuarioServiceTest.crear_CorreoYaExiste_LanzaConflictException`: Control de unicidad de correo institucional (409 Conflict). (PASS)
+### Detalle de Pruebas Unitarias Evaluadas:
+1. `AuthServiceTest.login_CredencialesValidas_RetornaAuthResponse`: Emisión exitosa de token JWT y rol correcto (`ADMINISTRADOR`, `DOCENTE`, `ESTUDIANTE`). (PASS)
+2. `AuthServiceTest.login_UsuarioNoExiste_LanzaException`: Validación de `ResourceNotFoundException` ante correos inexistentes. (PASS)
+3. `AuthServiceTest.login_UsuarioInactivo_LanzaException`: Bloqueo inmediato para usuarios con `estado = false`. (PASS)
+4. `MateriaServiceTest.listarTodas_RetornaLista`: Consulta y mapeo de asignaturas con créditos y semestre. (PASS)
+5. `MateriaServiceTest.listarPorEstado_RetornaListaFiltrada`: Filtrado de materias activas/inactivas. (PASS)
+6. `MateriaServiceTest.obtenerPorId_Existe_RetornaMateria`: Búsqueda por clave primaria en base de datos. (PASS)
+7. `MateriaServiceTest.obtenerPorId_NoExiste_LanzaExcepcion`: Manejo estandarizado de error 404. (PASS)
+8. `MateriaServiceTest.crear_GuardaMateria`: Alta de asignaturas vinculadas a programa. (PASS)
+9. `SolicitudServiceTest.crear_EstudianteYDisponibilidadValida_GuardaSolicitud`: Valida que estudiantes puedan solicitar tutorías activas. (PASS)
+10. `SolicitudServiceTest.crear_TutoriaNoDisponible_LanzaConflictException`: Bloqueo ante tutorías ya ocupadas (409 Conflict). (PASS)
+11. `SolicitudServiceTest.cambiarEstado_Aceptada_ActualizaTutoriaA_Ocupada`: Transición atómica de estados (`ACEPTADA` $\rightarrow$ `OCUPADA`). (PASS)
+12. `SolicitudServiceTest.listarPorEstudiante_RetornaLista`: Consulta de historial de solicitudes por estudiante. (PASS)
+13. `UsuarioServiceTest.listarTodos_RetornaLista`: Auditoría de usuarios por el rol Administrador. (PASS)
+14. `UsuarioServiceTest.obtenerPorId_UsuarioExiste_RetornaUsuario`: Consulta de perfil por identificador. (PASS)
+15. `UsuarioServiceTest.obtenerPorId_UsuarioNoExiste_LanzaExcepcion`: 404 en usuario inexistente. (PASS)
+16. `UsuarioServiceTest.crear_CorreoNoExiste_GuardaUsuario`: Alta exitosa con hashing BCrypt unidireccional. (PASS)
+17. `UsuarioServiceTest.crear_CorreoYaExiste_LanzaConflictException`: Unicidad de correo institucional (409 Conflict). (PASS)
 
 ---
 
-## 3. Reporte de Pruebas Automatizadas de Postman
+## 3. Reporte de Pruebas Automatizadas de Postman / Newman
 
-Colección: `backend/postman/SGTU-API-Entrega3.postman_collection.json`  
-Entorno: `backend/postman/SGTU-Local.postman_environment.json`  
-URL Base: `{{base_url}} = http://localhost:8080`
+**Colección:** `backend/postman/SGTU-API-Entrega3.postman_collection.json`  
+**Entornos Soportados:**
+- Local: `backend/postman/SGTU-Local.postman_environment.json` (`http://localhost:8080`)
+- Producción Nube: `backend/postman/SGTU-Render.postman_environment.json` (`https://sgtu-tutorias-universitarias.onrender.com`)
 
-### Matriz de Ejecución de Endpoints y Assertions (`pm.test`):
+### Matriz de Ejecución y Validaciones (`pm.test`):
 
-| # | Módulo / Carpeta | Petición | Rol | Status Esperado | Verificaciones Automatizadas (`pm.test`) | Estado |
-|---|---|---|---|:---:|---|:---:|
-| 1 | `00. Auth` | POST `/api/auth/login` (Admin) | Público | 200 OK | Status 200, JWT generado, rol `ADMINISTRADOR`, guarda `{{token_admin}}`, latencia < 2000ms | ✅ PASS |
-| 2 | `00. Auth` | POST `/api/auth/login` (Tutor) | Público | 200 OK | Status 200, JWT generado, rol `TUTOR`, guarda `{{token_tutor}}` | ✅ PASS |
-| 3 | `00. Auth` | POST `/api/auth/login` (Estudiante) | Público | 200 OK | Status 200, JWT generado, rol `ESTUDIANTE`, guarda `{{token_estudiante}}` | ✅ PASS |
-| 4 | `00. Auth` | POST `/api/auth/login` (Fallido) | Anónimo | 401 Unauth | Status 401, JSON `{status: 401, error: "Unauthorized"}` | ✅ PASS |
-| 5 | `01. Usuarios` | GET `/api/usuarios` | Admin | 200 OK | Status 200, arreglo no vacío, campo `password` protegido (no visible) | ✅ PASS |
-| 6 | `01. Usuarios` | POST `/api/usuarios` (Crear Tutor) | Admin | 201 Created | Status 201, rol asignado `TUTOR`, password no expuesto | ✅ PASS |
-| 7 | `01. Usuarios` | POST `/api/usuarios` (Crear Estudiante)| Admin | 201 Created | Status 201, rol asignado `ESTUDIANTE` | ✅ PASS |
-| 8 | `02. Materias` | GET `/api/materias` | Estudiante | 200 OK | Status 200, listado de materias activas | ✅ PASS |
-| 9 | `02. Materias` | POST `/api/materias` (Crear) | Admin | 201 Created | Status 201, autogeneración de ID, guarda `{{materia_id}}` | ✅ PASS |
-| 10 | `02. Materias` | GET `/api/materias/1` | Tutor | 200 OK | Status 200, existencia del atributo `nombre` | ✅ PASS |
-| 11 | `03. Tutores` | GET `/api/tutores` | Estudiante | 200 OK | Status 200, listado de tutores activos | ✅ PASS |
-| 12 | `03. Tutores` | GET `/api/tutores/1` | Estudiante | 200 OK | Status 200, detalle del tutor con campo `especialidad` | ✅ PASS |
-| 13 | `04. Tutorías` | POST `/api/tutorias` (Crear) | Tutor | 201 Created | Status 201, estado inicial `DISPONIBLE`, guarda `{{tutoria_id}}` | ✅ PASS |
-| 14 | `04. Tutorías` | GET `/api/tutorias?estado=DISPONIBLE` | Estudiante | 200 OK | Status 200, listado de tutorías disponibles para solicitar | ✅ PASS |
-| 15 | `05. Solicitudes` | POST `/api/solicitudes` (Solicitar) | Estudiante | 201 Created | Status 201, estado `PENDIENTE`, guarda `{{solicitud_id}}` | ✅ PASS |
-| 16 | `05. Solicitudes` | GET `/api/solicitudes` | Tutor | 200 OK | Status 200, solicitudes recibidas por el tutor | ✅ PASS |
-| 17 | `05. Solicitudes` | PATCH `/api/solicitudes/{id}/responder`| Tutor | 200 OK | Status 200, estado cambia a `ACEPTADA`, tutoría cambia a `OCUPADA` | ✅ PASS |
-| 18 | `06. Seguridad` | GET `/api/usuarios` (Sin Token) | Anónimo | 401 Unauth | Status 401, mensaje estandarizado de rechazo | ✅ PASS |
-| 19 | `06. Seguridad` | POST `/api/materias` (Por Estudiante) | Estudiante | 403 Forbidden | Status 403, error `{status: 403, error: "Forbidden"}` | ✅ PASS |
-| 20 | `06. Seguridad` | POST `/api/usuarios` (Por Estudiante) | Estudiante | 403 Forbidden | Status 403, estudiante bloqueado de crear usuarios | ✅ PASS |
-| 21 | `06. Seguridad` | POST `/api/auth/login` (Body Vacío) | Anónimo | 400 Bad Req | Status 400, mapa `errores` con detalle de validación Jakarta | ✅ PASS |
-| 22 | `06. Seguridad` | GET `/api/materias/999999` | Admin | 404 Not Found | Status 404, mensaje legible de recurso no encontrado | ✅ PASS |
+| # | Módulo / Carpeta | Petición HTTP | Rol de Ejecución | Status Esperado | Verificaciones Automatizadas (`pm.test`) | Estado |
+|---|---|---|:---:|:---:|---|:---:|
+| 1 | `00. Auth` | POST `/api/auth/login` (Admin) | Público | 200 OK | Status 200, JWT válido, rol `ADMINISTRADOR`, guarda `{{token_admin}}` | ✅ PASS |
+| 2 | `00. Auth` | POST `/api/auth/login` (Docente) | Público | 200 OK | Status 200, JWT válido, rol `DOCENTE`, guarda `{{token_docente}}` | ✅ PASS |
+| 3 | `00. Auth` | POST `/api/auth/login` (Estudiante) | Público | 200 OK | Status 200, JWT válido, rol `ESTUDIANTE`, guarda `{{token_estudiante}}` | ✅ PASS |
+| 4 | `00. Auth` | POST `/api/auth/login` (Fallido) | Anónimo | 401 Unauth | Status 401, JSON `{status: 401, error: "Unauthorized", message: ...}` | ✅ PASS |
+| 5 | `01. Usuarios` | GET `/api/usuarios` | Admin | 200 OK | Status 200, arreglo no vacío, atributo `password` protegido (no expuesto) | ✅ PASS |
+| 6 | `01. Usuarios` | GET `/api/usuarios/1` | Admin | 200 OK | Status 200, existencia de atributos `id`, `correo` y `rol` | ✅ PASS |
+| 7 | `02. Académico`| GET `/api/facultades` | Estudiante | 200 OK | Status 200, listado de facultades, guarda `{{facultad_id}}` | ✅ PASS |
+| 8 | `02. Académico`| GET `/api/programas` | Estudiante | 200 OK | Status 200, relación con facultad, guarda `{{programa_id}}` | ✅ PASS |
+| 9 | `03. Materias` | GET `/api/materias?programaId=1` | Estudiante | 200 OK | Status 200, materias con semestres y créditos, guarda `{{materia_id}}` | ✅ PASS |
+| 10 | `03. Materias` | GET `/api/materias/1` | Estudiante | 200 OK | Status 200, existencia de `nombre` y `codigo` único | ✅ PASS |
+| 11 | `04. Perfiles` | GET `/api/docentes` | Estudiante | 200 OK | Status 200, lista de docentes con especialidad y materias | ✅ PASS |
+| 12 | `04. Perfiles` | GET `/api/estudiantes` | Docente | 200 OK | Status 200, lista de estudiantes con código institucional y semestre | ✅ PASS |
+| 13 | `05. Tutorías` | GET `/api/tutorias?estado=DISPONIBLE`| Estudiante | 200 OK | Status 200, tutorías activas con modalidad presencial/virtual | ✅ PASS |
+| 14 | `06. Solicitudes`| GET `/api/solicitudes` | Estudiante | 200 OK | Status 200, historial de solicitudes del usuario autenticado | ✅ PASS |
+| 15 | `07. Seguridad`| GET `/api/usuarios` (Sin Token) | Anónimo | 401 Unauth | Status 401, rechazo inmediato por falta de cabecera Authorization | ✅ PASS |
+| 16 | `07. Seguridad`| POST `/api/facultades` (Por Alumno) | Estudiante | 403 Forbidden | Status 403, estudiante bloqueado de crear facultades por `@PreAuthorize` | ✅ PASS |
+| 17 | `07. Seguridad`| POST `/api/auth/login` (Body Vacío)| Anónimo | 400 Bad Req | Status 400, validación Jakarta (`correo` y `password` requeridos) | ✅ PASS |
 
 ---
 
-## 4. Instrucciones para Ejecutar en Postman Collection Runner
+## 4. Comando de Reproducción Rápida con Newman
 
-1. Abrir Postman e importar:
-   - Archivo de Colección: `backend/postman/SGTU-API-Entrega3.postman_collection.json`
-   - Archivo de Entorno: `backend/postman/SGTU-Local.postman_environment.json`
-2. Seleccionar el entorno **"SGTU - Local Environment"** en la esquina superior derecha de Postman.
-3. Asegurarse de tener el backend corriendo en `http://localhost:8080` (con `mvn spring-boot:run` o `run-local.ps1`).
-4. Hacer clic derecho sobre la colección **"SGTU API - Entrega 3 (Seguridad + RBAC)"** y seleccionar **"Run collection"**.
-5. Presionar **"Run SGTU API - Entrega 3"**.
-6. Todos los tests se ejecutarán secuencialmente propagando automáticamente los tokens Bearer JWT y arrojando resultado 100% passed (verde).
+Cualquier evaluador o docente puede clonar el repositorio y ejecutar la suite completa en consola con un solo comando:
+
+```bash
+# Ejecución directa contra la nube en Render:
+npx newman run backend/postman/SGTU-API-Entrega3.postman_collection.json \
+  -e backend/postman/SGTU-Render.postman_environment.json \
+  --reporters cli
+```

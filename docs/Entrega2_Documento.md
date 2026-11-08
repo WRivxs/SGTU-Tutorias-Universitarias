@@ -1,307 +1,198 @@
-ENTREGA 2 – Modelado de Base de Datos y Backend Inicial
+# ENTREGA 2 – Modelado de Base de Datos y Backend Inicial
+## Sistema de Gestión de Tutorías Universitarias (SGTU)
 
-*Formato APA – Plantilla "Plantilla Entrega 2 BD y Backend_Inicial"*
+*Formato Institucional — Corporación Universitaria Antonio José de Sucre (UNIAJS)*  
+*Programa de Ingeniería de Sistemas — Electiva Profesional II*  
 
 ---
 
-**Página de título**
+### Datos del Proyecto:
+* **Nombre del Proyecto:** SGTU — Sistema de Gestión de Tutorías Universitarias
+* **Curso:** Electiva Profesional II
+* **Docente Evaluador:** Ing. Jaider de la Rosa Bertel
+* **Integrantes del Equipo:**
+  1. Wadid Rivas Payares
+  2. Azael Espitia Toribio
+  3. Eduardo Julio Bettin Avilez
+  4. Jhon Jader Bertel Ortega
+* **Enlace al Repositorio Oficial (GitHub):** [https://github.com/WRivxs/SGTU-Tutorias-Universitarias](https://github.com/WRivxs/SGTU-Tutorias-Universitarias)
+* **Base de Datos en la Nube:** MySQL 8 en Amazon Web Services (AWS RDS)
 
-*Centro de la página*
-
-Nombre de la Universidad
-Programa de Ingeniería de Sistemas
-
-ENTREGA 2
-Modelado de Base de Datos y Backend Inicial
-
-[Nombre del Proyecto]
-
-Curso: [Nombre de la asignatura]
-Docente: [Nombre del docente]
-Integrantes:
-1. Wadid Rivas Payares
-2. Azael Espitia Toribio
-3. Eduardo Julio Bettin Avilez
-4. Jhon Jader Bertel Ortega
-5. [Nombre integrante 5]
-
-Enlace al repositorio GitHub: https://github.com/WRivxs/SGTU-Tutorias-Universitarias
-Fecha de entrega: [dd/mm/aaaa]
 ---
 
 ## 1. Introducción
-En esta segunda entrega se presenta el modelo de datos final (normalizado en 3FN), su despliegue en AWS RDS y la primera versión del backend implementado con Spring Boot 3.3.13.  El backend incluye todas las entidades JPA, sus repositorios y los endpoints CRUD necesarios para gestionar materias, usuarios, tutores, tutorías y solicitudes, cumpliendo con la arquitectura de cuatro capas definida en la Entrega 1.
 
-## 2. Modelo Entidad‑Relación Final (Normalizado)
+En esta segunda entrega se presenta el modelo de datos relacional normalizado hasta la Tercera Forma Normal (3FN), su despliegue en la nube mediante una instancia gestionada de MySQL 8 en Amazon Web Services (AWS RDS) y la implementación de la primera versión del backend con Spring Boot 3 y Spring Data JPA.
 
-**[Inserte aquí la imagen del Diagrama ER final]**
-
-### 2.1 Cambios respecto al modelo preliminar (Entrega 1)
-| Cambio | Motivo |
-|--------|--------|
-| Separación de `usuarios` y `tutores` | Relación 1‑0..1; elimina atributos nulos. |
-| Normalización de `solicitudes` | Tabla propia con FK a `usuarios` y `tutorias`. |
-| Uso de enumeraciones (`rol`, `modalidad`, `estado`) | Garantiza integridad referencial a nivel de BD. |
-| Índices adicionales (`idx_tutorias_estado`, `idx_solicitudes_estado`, `idx_usuarios_rol`) | Mejora rendimiento en filtros frecuentes. |
-| Campos de auditoría (`fecha_registro`, `fecha_solicitud`) | Cumple RNF de trazabilidad. |
-
-## 3. Diccionario de Datos
-| Tabla | Campo | Tipo | Restricciones | Descripción |
-|-------|-------|------|---------------|-------------|
-| usuarios | id_usuario | BIGINT | PK, AUTO_INCREMENT | Identificador único del usuario. |
-|  | nombre | VARCHAR(100) | NOT NULL | Nombre propio. |
-|  | apellido | VARCHAR(100) | NOT NULL | Apellido. |
-|  | correo | VARCHAR(150) | NOT NULL, UNIQUE | Dirección de correo (usuario único). |
-|  | password | VARCHAR(255) | NOT NULL | Hash BCrypt de la contraseña. |
-|  | rol | ENUM('ADMINISTRADOR','TUTOR','ESTUDIANTE') | NOT NULL | Tipo de usuario. |
-|  | estado | BOOLEAN | NOT NULL, DEFAULT TRUE | Estado activo/inactivo. |
-|  | fecha_registro | DATETIME | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Momento de creación. |
-| materias | id_materia | BIGINT | PK, AUTO_INCREMENT | Identificador de la materia. |
-|  | nombre | VARCHAR(100) | NOT NULL | Nombre de la materia. |
-|  | descripcion | VARCHAR(255) |  | Descripción opcional. |
-|  | estado | BOOLEAN | NOT NULL, DEFAULT TRUE | Vigencia de la materia. |
-| tutores | id_tutor | BIGINT | PK, AUTO_INCREMENT | Identificador del perfil de tutor. |
-|  | usuario_id | BIGINT | NOT NULL, UNIQUE, FK → usuarios(id_usuario) | Usuario asociado (rol = TUTOR). |
-|  | especialidad | VARCHAR(100) |  | Área de conocimiento. |
-|  | descripcion | VARCHAR(255) |  | Texto descriptivo. |
-|  | disponibilidad | VARCHAR(100) |  | Horarios disponibles. |
-| tutorias | id_tutoria | BIGINT | PK, AUTO_INCREMENT | Identificador de la tutoría. |
-|  | tutor_id | BIGINT | NOT NULL, FK → tutores(id_tutor) | Tutor que imparte la sesión. |
-|  | materia_id | BIGINT | NOT NULL, FK → materias(id_materia) | Materia de la tutoría. |
-|  | fecha | DATE | NOT NULL | Fecha programada. |
-|  | hora | TIME | NOT NULL | Hora programada. |
-|  | modalidad | ENUM('PRESENCIAL','VIRTUAL') | NOT NULL | Tipo de sesión. |
-|  | lugar | VARCHAR(150) |  | Dirección física (solo PRESENCIAL). |
-|  | descripcion | VARCHAR(255) |  | Detalles adicionales. |
-|  | estado | ENUM('DISPONIBLE','OCUPADA','CANCELADA','FINALIZADA') | NOT NULL, DEFAULT 'DISPONIBLE' | Estado de la tutoría. |
-| solicitudes | id_solicitud | BIGINT | PK, AUTO_INCREMENT | Identificador de la solicitud. |
-|  | estudiante_id | BIGINT | NOT NULL, FK → usuarios(id_usuario) | Estudiante que solicita. |
-|  | tutoria_id | BIGINT | NOT NULL, FK → tutorias(id_tutoria) | Tutoría solicitada. |
-|  | fecha_solicitud | DATETIME | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Momento de la petición. |
-|  | estado | ENUM('PENDIENTE','ACEPTADA','RECHAZADA','CANCELADA') | NOT NULL, DEFAULT 'PENDIENTE' | Estado de la solicitud. |
-|  | comentario | VARCHAR(255) |  | Texto opcional del estudiante. |
-
-## 4. Scripts de Creación de Base de Datos (DDL)
-**Archivo adjunto:** `sql/ddl_tutorias.sql` (ubicado en la raíz del proyecto).
-
-```sql
--- =====================================================================
--- Sistema de Gestión de Tutorías Universitarias
--- Script DDL - Base de datos MySQL (AWS RDS)
--- Entrega 2 - Modelado de BD + Backend Inicial
--- =====================================================================
-
-CREATE DATABASE IF NOT EXISTS tutorias_db
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE tutorias_db;
-
--- Tabla: usuarios
-CREATE TABLE usuarios (
-    id_usuario      BIGINT AUTO_INCREMENT PRIMARY KEY,
-    nombre          VARCHAR(100)  NOT NULL,
-    apellido        VARCHAR(100)  NOT NULL,
-    correo          VARCHAR(150)  NOT NULL,
-    password        VARCHAR(255)  NOT NULL,
-    rol             ENUM('ADMINISTRADOR','TUTOR','ESTUDIANTE') NOT NULL,
-    estado          BOOLEAN       NOT NULL DEFAULT TRUE,
-    fecha_registro  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_usuarios_correo UNIQUE (correo)
-) ENGINE=InnoDB;
-
--- Tabla: materias
-CREATE TABLE materias (
-    id_materia      BIGINT AUTO_INCREMENT PRIMARY KEY,
-    nombre          VARCHAR(100)  NOT NULL,
-    descripcion     VARCHAR(255),
-    estado          BOOLEAN       NOT NULL DEFAULT TRUE
-) ENGINE=InnoDB;
-
--- Tabla: tutores
-CREATE TABLE tutores (
-    id_tutor        BIGINT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id      BIGINT        NOT NULL,
-    especialidad    VARCHAR(100),
-    descripcion     VARCHAR(255),
-    disponibilidad  VARCHAR(100),
-    CONSTRAINT uq_tutores_usuario UNIQUE (usuario_id),
-    CONSTRAINT fk_tutores_usuario FOREIGN KEY (usuario_id)
-        REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-) ENGINE=InnoDB;
-
--- Tabla: tutorias
-CREATE TABLE tutorias (
-    id_tutoria      BIGINT AUTO_INCREMENT PRIMARY KEY,
-    tutor_id        BIGINT        NOT NULL,
-    materia_id      BIGINT        NOT NULL,
-    fecha           DATE          NOT NULL,
-    hora            TIME          NOT NULL,
-    modalidad       ENUM('PRESENCIAL','VIRTUAL') NOT NULL,
-    lugar           VARCHAR(150),
-    descripcion     VARCHAR(255),
-    estado          ENUM('DISPONIBLE','OCUPADA','CANCELADA','FINALIZADA') NOT NULL DEFAULT 'DISPONIBLE',
-    CONSTRAINT fk_tutorias_tutor FOREIGN KEY (tutor_id)
-        REFERENCES tutores(id_tutor)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_tutorias_materia FOREIGN KEY (materia_id)
-        REFERENCES materias(id_materia)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE
-) ENGINE=InnoDB;
-
--- Tabla: solicitudes
-CREATE TABLE solicitudes (
-    id_solicitud     BIGINT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id    BIGINT        NOT NULL,
-    tutoria_id       BIGINT        NOT NULL,
-    fecha_solicitud  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    estado           ENUM('PENDIENTE','ACEPTADA','RECHAZADA','CANCELADA') NOT NULL DEFAULT 'PENDIENTE',
-    comentario       VARCHAR(255),
-    CONSTRAINT fk_solicitudes_estudiante FOREIGN KEY (estudiante_id)
-        REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_solicitudes_tutoria FOREIGN KEY (tutoria_id)
-        REFERENCES tutorias(id_tutoria)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-) ENGINE=InnoDB;
-
--- Índices adicionales
-CREATE INDEX idx_tutorias_estado   ON tutorias(estado);
-CREATE INDEX idx_solicitudes_estado ON solicitudes(estado);
-CREATE INDEX idx_usuarios_rol      ON usuarios(rol);
-
--- Datos de prueba (opcional)
-INSERT INTO usuarios (nombre, apellido, correo, password, rol) VALUES
-('Admin', 'Sistema', 'admin@tutorias.com', '$2a$10$examplehash', 'ADMINISTRADOR'),
-('Wadid', 'Rivas', 'wadid.tutor@tutorias.com', '$2a$10$examplehash', 'TUTOR'),
-('Eduardo', 'Bettin', 'eduardo.estudiante@tutorias.com', '$2a$10$examplehash', 'ESTUDIANTE');
-
-INSERT INTO materias (nombre, descripcion) VALUES
-('Bases de Datos', 'Modelado y administración de bases de datos relacionales'),
-('Programación Web', 'Desarrollo de aplicaciones web con frameworks modernos');
-
-INSERT INTO tutores (usuario_id, especialidad, descripcion, disponibilidad) VALUES
-(2, 'Bases de Datos', 'Tutor con experiencia en modelado relacional', 'Lunes y miércoles 3-5pm');
-```
-
-## 5. Configuración de la Instancia AWS RDS
-| Parámetro | Valor (ejemplo) |
-|-----------|-----------------|
-| DB instance identifier | tutorias-db-instance |
-| Motor y versión | MySQL 8.0.35 |
-| Clase de instancia | db.t3.micro |
-| Región | us-east-1 |
-| Nombre de la base de datos | tutorias_db |
-| Endpoint | tutorias-db-instance.c9d2v6z8hdfg.us-east-1.rds.amazonaws.com:3306 |
-
-### 5.1 Evidencia de instancia activa
-**[Inserte aquí la captura de pantalla de la consola AWS – instancia en estado "Available"]**
-
-### 5.2 Gestión segura de credenciales
-- Las credenciales (`DB_USERNAME`, `DB_PASSWORD`) **no** están versionadas.
-- Se declaran como **variables de entorno** en `run‑local.ps1` y se leen en `application.yml` mediante `${}`.
-- En CI/CD se emplean *GitHub Secrets* para inyectarlas sin exposición.
-
-## 6. Arquitectura del Proyecto Spring Boot
-### 6.1 Dependencias utilizadas
-| Dependencia | Propósito |
-|-------------|-----------|
-| spring-boot-starter-web | Exposición de endpoints REST (Tomcat embebido). |
-| spring-boot-starter-data-jpa | Mapeo objeto‑relacional y repositorios JPA. |
-| mysql‑connector‑j | Driver JDBC para MySQL/AWS RDS. |
-| spring-boot-starter-validation | Bean Validation (`@NotBlank`, `@Email`, etc.). |
-| lombok | Reduce boiler‑plate (`@Getter`, `@Setter`, `@Builder`). |
-| spring-boot-starter-test | JUnit 5 + Mockito para pruebas unitarias. |
-
-### 6.2 Estructura de paquetes (4 capas)
-```
-com.uaq.tutorias
-├── config/                # Configuración global (CORS, Swagger, etc.)
-├── controller/            # @RestController – exposición HTTP
-├── service/               # Interfaces de lógica de negocio
-│   └── impl/              # Implementaciones (@Service, @Transactional)
-├── repository/            # Extiende JpaRepository para cada entidad
-├── entity/                # Clases JPA (@Entity) – modelo de BD
-├── exception/             # Manejo global de errores (@RestControllerAdvice)
-└── TutoriasBackendApplication.java   # Clase principal (main)
-```
-
-## 7. Entidades JPA Implementadas (ejemplo)
-| Entidad | Atributos principales | Anotaciones / Relaciones clave |
-|---------|-----------------------|--------------------------------|
-| Usuario | idUsuario, nombre, apellido, correo, password, rol, estado, fechaRegistro | `@Entity`, `@Table(name="usuarios")`, `@Id @GeneratedValue`, `@Enumerated(EnumType.STRING)` |
-| Materia | idMateria, nombre, descripcion, estado | `@Entity`, `@Id @GeneratedValue`, `@Column(nullable=false)` |
-| Tutoria | idTutoria, tutor, materia, fecha, hora, modalidad, lugar, descripcion, estado | `@Entity`, `@ManyToOne` (tutor → Tutor), `@ManyToOne` (materia → Materia), `@Enumerated(EnumType.STRING)` |
-
-## 8. Repositorios (Spring Data JPA)
-| Repositorio | Entidad asociada | Métodos personalizados |
-|-------------|------------------|------------------------|
-| UsuarioRepository | Usuario | `Optional<Usuario> findByCorreo(String correo);` |
-| MateriaRepository | Materia | — (hereda CRUD) |
-| TutoriaRepository | Tutoria | `List<Tutoria> findByEstado(String estado);` |
-| TutorRepository | Tutor | `Optional<Tutor> findByUsuarioId(Long usuarioId);` |
-| SolicitudRepository | Solicitud | `List<Solicitud> findByEstado(String estado);` |
-
-## 9. Endpoints REST Implementados (CRUD)
-### Entidad **Materias**
-| Método | Endpoint | Descripción | Comentario |
-|--------|----------|-------------|------------|
-| GET | /api/materias | Lista todas las materias (opcional `?estado=true`). | Devuelve JSON array. |
-| GET | /api/materias/{id} | Obtiene materia por id. | 404 si no existe. |
-| POST | /api/materias | Crea una nueva materia. | Valida `nombre` no nulo. |
-| PUT | /api/materias/{id} | Actualiza datos de la materia. | Sólo campos enviados se actualizan. |
-| DELETE | /api/materias/{id} | Elimina la materia (solo si no está referenciada). | 409 si existen tutorías vinculadas. |
-
-### Entidad **Tutorías**
-| Método | Endpoint | Descripción | Comentario |
-|--------|----------|-------------|------------|
-| GET | /api/tutorias | Lista tutorías; filtro opcional `?estado=DISPONIBLE`. | Usa `TutoriaRepository.findByEstado`. |
-| GET | /api/tutorias/{id} | Detalle de una tutoría. | 404 si no existe. |
-| POST | /api/tutorias | Programa una nueva tutoría. | Verifica existencia de `tutor_id` y `materia_id`. |
-| PUT | /api/tutorias/{id} | Modifica datos (fecha, hora, estado, etc.). | Cambios de estado (`OCUPADA`, `CANCELADA`). |
-| DELETE | /api/tutorias/{id} | Elimina la tutoría (cascada a solicitudes). | 200 OK si se elimina. |
-
-*Los controladores de `usuarios`, `tutores` y `solicitudes` siguen la misma plantilla CRUD.*
-
-## 10. Evidencia de Pruebas en Postman
-**[Inserte aquí captura de pantalla de Postman – petición GET `/api/materias` (respuesta 200)]**
-**[Inserte aquí captura de pantalla de Postman – petición POST `/api/materias` (cuerpo válido, respuesta 201)]**
-**[Inserte aquí captura de pantalla de Postman – petición PUT `/api/materias/1` (respuesta 200)]**
-**[Inserte aquí captura de pantalla de Postman – petición DELETE `/api/materias/1` (respuesta 200)]**
-*Se muestra al menos un caso de éxito y un caso de error para cada entidad.*
-
-## 11. Repositorio en GitHub
-**Enlace:** https://github.com/WRivxs/SGTU-Tutorias-Universitarias
-
-### 11.1 Resumen del README.md
-- **Descripción del proyecto:** objetivo, stack tecnológico y arquitectura de 4 capas.
-- **Requisitos previos:** JDK 17, Maven, PowerShell/Bash.
-- **Variables de entorno:** `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`, `SERVER_PORT`.
-- **Script de ejecución local:** `run‑local.ps1` (exporta variables y lanza `mvn spring-boot:run`).
-- **Compilación & pruebas:** `mvn clean install`, `mvn test`.
-- **Endpoints REST:** tabla resumen de recursos.
-- **Colección Postman:** archivo `postman/Tutorias-API.postman_collection.json`.
-- **Despliegue en AWS RDS:** pasos para crear la instancia y ejecutar `ddl_tutorias.sql`.
-- **Contribución:** normas de commit, `.gitignore` (excluye credenciales y `run‑local.ps1`).
-
-## 12. Conclusiones y Retos Encontrados
-| Área | Dificultad | Solución |
-|------|------------|----------|
-| Modelado de datos | Redundancia entre usuarios y tutores en la versión preliminar. | Creación de tabla `tutores` con relación 1‑0..1; normalización a 3FN. |
-| Conexión a AWS RDS | Bloqueo del puerto 3306 por la VPC. | Configuración de Security Group para permitir inbound desde la IP del equipo; uso de variables de entorno. |
-| Configuración Spring Boot | Errores de parsing en `application.yml` por comillas faltantes. | Uso de `${}` y pruebas locales antes del commit. |
-| Validación de datos | DTOs sin constraints permitían datos inválidos. | Añadido Bean Validation (`@NotBlank`, `@Email`, `@Size`) y `@Valid` en controladores. |
-| Pruebas Postman | 500 al crear tutorías con `tutor_id` inexistente. | Verificación de existencia en el servicio y retorno 404 con mensaje claro. |
-| Documentación | Mantener sincronizado README, script `run‑local.ps1` y colección Postman. | Checklist antes de subir y generación automática de la colección mediante pruebas de integración. |
-
-**Lección clave:** la coherencia entre el diseño (Entrega 1) y la implementación (Entrega 2) es esencial; cualquier desviación debe quedar documentada y justificada, tal como se muestra en este informe.
+A partir de la retroalimentación docente, el modelo evolucionó desde una estructura genérica hacia una **arquitectura académica universitaria robusta**, capaz de modelar facultades, programas académicos, asignaturas ubicadas en la malla curricular por semestre, perfiles académicos especializados (Docente y Estudiante) y relaciones de impartición muchos a muchos (N:M).
 
 ---
 
-*Fin del documento.*
+## 2. Modelo Entidad-Relación y Cambios de la Refactorización
+
+### 2.1 Justificación de los Cambios del Modelo Universitario
+
+| Cambio Arquitectónico | Justificación de Ingeniería y Normalización (3FN) |
+|---|---|
+| **Incorporación de `facultades` y `programas`** | Modela la jerarquía académica real (1 Facultad contiene N Programas; 1 Programa contiene N Materias), evitando redundancias de nombres en texto libre. |
+| **Malla curricular en `materias`** | Cada materia queda adscrita a un programa, con su semestre de ubicación (1 a 10) y número de créditos académicos. |
+| **Separación de Identidad y Perfil Académico** | La tabla `usuarios` gestiona credenciales de acceso (correo, password BCrypt, rol). Las tablas `docentes` y `estudiantes` almacenan los atributos especializados de cada actor sin campos nulos innecesarios. |
+| **Relación N:M `docente_materias`** | Permite que un docente dicte múltiples asignaturas de su especialidad y que una misma asignatura cuente con múltiples tutores disponibles. |
+| **Auditoría y Trazabilidad** | Inclusión de timestamps (`fecha_registro`, `fecha_solicitud`) para cumplimiento de requerimientos no funcionales de auditoría. |
+
+---
+
+## 3. Diccionario de Datos del Sistema (8 Tablas Normalizadas)
+
+### 3.1 Tabla: `facultades`
+Catálogo de unidades académicas mayores de la institución.
+
+| Campo | Tipo de Dato | Restricciones | Descripción |
+|---|---|---|---|
+| `id_facultad` | BIGINT | PK, AUTO_INCREMENT | Identificador único de la facultad. |
+| `nombre` | VARCHAR(120) | NOT NULL, UNIQUE | Nombre oficial de la facultad (ej. *Facultad de Ingeniería*). |
+| `codigo` | VARCHAR(20) | NOT NULL, UNIQUE | Código mnemotécnico institucional (ej. `FAC-ING`). |
+| `descripcion`| VARCHAR(255) | NULL | Reseña o descripción del área del conocimiento. |
+| `estado` | BOOLEAN | NOT NULL, DEFAULT TRUE | Estado operativo (activa/inactiva). |
+
+---
+
+### 3.2 Tabla: `programas`
+Carreras profesionales pertenecientes a una facultad (Relación 1:N).
+
+| Campo | Tipo de Dato | Restricciones | Descripción |
+|---|---|---|---|
+| `id_programa` | BIGINT | PK, AUTO_INCREMENT | Identificador único del programa académico. |
+| `facultad_id` | BIGINT | NOT NULL, FK $\rightarrow$ `facultades(id_facultad)` | Facultad a la cual está adscrito. |
+| `nombre` | VARCHAR(120) | NOT NULL | Nombre de la carrera (ej. *Ingeniería de Sistemas*). |
+| `codigo` | VARCHAR(20) | NOT NULL, UNIQUE | Código del programa (ej. `PROG-SIS`). |
+| `descripcion`| VARCHAR(255) | NULL | Perfil ocupacional o descripción curricular. |
+| `estado` | BOOLEAN | NOT NULL, DEFAULT TRUE | Estado del programa académico. |
+
+---
+
+### 3.3 Tabla: `materias`
+Asignaturas pertenecientes a un programa y ubicadas en su semestre de malla.
+
+| Campo | Tipo de Dato | Restricciones | Descripción |
+|---|---|---|---|
+| `id_materia` | BIGINT | PK, AUTO_INCREMENT | Identificador único de la asignatura. |
+| `programa_id` | BIGINT | NOT NULL, FK $\rightarrow$ `programas(id_programa)` | Programa al que pertenece la asignatura. |
+| `nombre` | VARCHAR(120) | NOT NULL | Nombre de la asignatura (ej. *Bases de Datos I*). |
+| `codigo` | VARCHAR(20) | NOT NULL, UNIQUE | Código académico (ej. `SIS-401`). |
+| `semestre` | INT | NOT NULL, CHECK (1..12) | Nivel o semestre de la malla curricular. |
+| `creditos` | INT | NOT NULL, DEFAULT 3 | Cantidad de créditos académicos. |
+| `descripcion`| VARCHAR(255) | NULL | Temáticas o competencias de la materia. |
+| `estado` | BOOLEAN | NOT NULL, DEFAULT TRUE | Vigencia de la asignatura en el catálogo. |
+
+---
+
+### 3.4 Tabla: `usuarios`
+Entidad base de seguridad, credenciales y autenticación para todos los roles.
+
+| Campo | Tipo de Dato | Restricciones | Descripción |
+|---|---|---|---|
+| `id_usuario` | BIGINT | PK, AUTO_INCREMENT | Identificador único del usuario. |
+| `nombre` | VARCHAR(100) | NOT NULL | Nombres del usuario. |
+| `apellido` | VARCHAR(100) | NOT NULL | Apellidos del usuario. |
+| `correo` | VARCHAR(150) | NOT NULL, UNIQUE | Correo institucional (clave de autenticación). |
+| `password` | VARCHAR(255) | NOT NULL | Hash criptográfico seguro mediante **BCrypt**. |
+| `rol` | ENUM | NOT NULL | `ADMINISTRADOR`, `DOCENTE`, `ESTUDIANTE`. |
+| `telefono` | VARCHAR(25) | NULL | Número telefónico de contacto. |
+| `estado` | BOOLEAN | NOT NULL, DEFAULT TRUE | Estado de la cuenta (activo/suspendido). |
+| `fecha_registro`| DATETIME | NOT NULL, DEFAULT NOW() | Fecha y hora de alta en el sistema. |
+
+---
+
+### 3.5 Tabla: `docentes`
+Perfil académico especializado para los usuarios con rol `DOCENTE`.
+
+| Campo | Tipo de Dato | Restricciones | Descripción |
+|---|---|---|---|
+| `id_docente` | BIGINT | PK, AUTO_INCREMENT | Identificador del perfil docente. |
+| `usuario_id` | BIGINT | NOT NULL, UNIQUE, FK $\rightarrow$ `usuarios` | Vínculo 1:1 con la cuenta de usuario. |
+| `especialidad`| VARCHAR(150)| NULL | Áreas de experticia técnica y académica. |
+| `descripcion` | VARCHAR(255)| NULL | Reseña profesional del tutor. |
+| `disponibilidad`| VARCHAR(150)| NULL | Franjas horarias habituales de atención. |
+
+---
+
+### 3.6 Tabla: `docente_materias` (Tabla Intermedia N:M)
+Relación muchos a muchos entre docentes y las materias que están facultados para dictar.
+
+| Campo | Tipo de Dato | Restricciones | Descripción |
+|---|---|---|---|
+| `docente_id` | BIGINT | NOT NULL, FK $\rightarrow$ `docentes(id_docente)` | Identificador del docente. |
+| `materia_id` | BIGINT | NOT NULL, FK $\rightarrow$ `materias(id_materia)` | Identificador de la asignatura. |
+| **PK Compuesta** | `(docente_id, materia_id)` | PRIMARY KEY | Garantiza que no se dupliquen asignaciones. |
+
+---
+
+### 3.7 Tabla: `estudiantes`
+Perfil académico especializado para los usuarios con rol `ESTUDIANTE`.
+
+| Campo | Tipo de Dato | Restricciones | Descripción |
+|---|---|---|---|
+| `id_estudiante`| BIGINT | PK, AUTO_INCREMENT | Identificador del perfil de estudiante. |
+| `usuario_id` | BIGINT | NOT NULL, UNIQUE, FK $\rightarrow$ `usuarios` | Vínculo 1:1 con la cuenta de usuario. |
+| `programa_id` | BIGINT | NOT NULL, FK $\rightarrow$ `programas` | Carrera que cursa el estudiante. |
+| `semestre_actual`| INT | NOT NULL, CHECK (1..12) | Semestre lectivo en el que se encuentra. |
+| `codigo_estudiantil`| VARCHAR(30)| NOT NULL, UNIQUE | Matrícula o código oficial (ej. `SIS-2024-0089`). |
+
+---
+
+### 3.8 Tabla: `tutorias`
+Sesiones de acompañamiento académico ofertadas por los docentes tutores.
+
+| Campo | Tipo de Dato | Restricciones | Descripción |
+|---|---|---|---|
+| `id_tutoria` | BIGINT | PK, AUTO_INCREMENT | Identificador único de la sesión de tutoría. |
+| `docente_id` | BIGINT | NOT NULL, FK $\rightarrow$ `docentes` | Tutor titular que imparte la sesión. |
+| `materia_id` | BIGINT | NOT NULL, FK $\rightarrow$ `materias` | Materia que se reforzará en la sesión. |
+| `fecha` | DATE | NOT NULL | Fecha programada para la sesión. |
+| `hora` | TIME | NOT NULL | Hora de inicio programada. |
+| `modalidad` | ENUM | NOT NULL | `PRESENCIAL`, `VIRTUAL`. |
+| `lugar` | VARCHAR(150) | NULL | Aula/laboratorio físico o enlace de reunión virtual. |
+| `cupo_maximo`| INT | NOT NULL, DEFAULT 5 | Límite máximo de estudiantes por sesión. |
+| `cupos_ocupados`| INT | NOT NULL, DEFAULT 0 | Contador de solicitudes confirmadas. |
+| `descripcion`| VARCHAR(255) | NULL | Tema específico a tratar (ej. *Normalización 1FN-3FN*). |
+| `estado` | ENUM | NOT NULL, DEFAULT 'DISPONIBLE' | `DISPONIBLE`, `OCUPADA`, `CANCELADA`, `FINALIZADA`. |
+
+---
+
+### 3.9 Tabla: `solicitudes`
+Peticiones de inscripción y reserva de cupo realizadas por los estudiantes.
+
+| Campo | Tipo de Dato | Restricciones | Descripción |
+|---|---|---|---|
+| `id_solicitud` | BIGINT | PK, AUTO_INCREMENT | Identificador de la solicitud. |
+| `estudiante_id`| BIGINT | NOT NULL, FK $\rightarrow$ `estudiantes` | Alumno que solicita el acompañamiento. |
+| `tutoria_id` | BIGINT | NOT NULL, FK $\rightarrow$ `tutorias` | Sesión a la cual se postula. |
+| `fecha_solicitud`| DATETIME | NOT NULL, DEFAULT NOW() | Fecha y hora en la que se radicó la solicitud. |
+| `estado` | ENUM | NOT NULL, DEFAULT 'PENDIENTE' | `PENDIENTE`, `ACEPTADA`, `RECHAZADA`, `CANCELADA`. |
+| `mensaje_estudiante`| VARCHAR(255)| NULL | Duda puntual o motivo de la consulta. |
+| `respuesta_docente` | VARCHAR(255)| NULL | Retroalimentación u observaciones del tutor. |
+
+---
+
+## 4. Script DDL Completo (MySQL 8 - AWS RDS)
+
+El script SQL ejecutable se encuentra versionado en el repositorio oficial en:
+`backend/sql/ddl_tutorias.sql`
+
+```sql
+-- DDL Resumen de Integridad Referencial
+CREATE DATABASE IF NOT EXISTS tutorias_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE tutorias_db;
+
+-- Las tablas se encuentran enlazadas mediante llaves foráneas ON DELETE RESTRICT ON UPDATE CASCADE
+-- asegurando el cumplimiento de la Tercera Forma Normal (3FN).
+```
+
+---
+
+## 5. Conexión y Despliegue en Amazon Web Services (AWS RDS)
+
+* **Motor:** MySQL Community 8.0.x
+* **Clase de Instancia:** `db.t3.micro` / `db.t4g.micro` (Capa Gratuita de AWS)
+* **Seguridad de Red:** Grupo de Seguridad (Security Group) configurado con puerto inbound `3306` accesible por el backend de Render mediante variables de entorno encriptadas (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`).
