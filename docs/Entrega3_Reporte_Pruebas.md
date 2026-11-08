@@ -114,3 +114,55 @@ npx newman run backend/postman/SGTU-API-Entrega3.postman_collection.json \
   -e backend/postman/SGTU-Render.postman_environment.json \
   --reporters cli
 ```
+
+---
+
+## 5. Evidencia Gráfica de Pruebas y Despliegue (Capturas de Pantalla)
+
+*(Sección estructurada conforme a la rúbrica de evaluación para evidenciar pruebas exitosas, casos de error y despliegue activo en AWS RDS)*
+
+### 5.1 Caso de Éxito: Autenticación y Emisión de Token JWT (HTTP 200 OK)
+* **Endpoint:** `POST /api/auth/login`
+* **Descripción:** Validación de credenciales de usuario y retorno exitoso del token firmado con `HS256`. Todos los tests automatizados (`pm.test`) aprobados.
+> **[Pegar aquí la Captura 1: Postman con Login Exitoso y Test Results en verde]**
+
+---
+
+### 5.2 Caso de Error: Autenticación con Credenciales Inválidas (HTTP 401 Unauthorized)
+* **Endpoint:** `POST /api/auth/login`
+* **Descripción:** Comprobación del bloqueo ante contraseñas incorrectas. Respuesta JSON estructurada según estándar RFC 7807 sin fuga de información sensible.
+> **[Pegar aquí la Captura 2: Postman con Error 401 Unauthorized y respuesta JSON]**
+
+---
+
+### 5.3 Caso de Éxito: Consulta de Estructura Académica y Materias (HTTP 200 OK)
+* **Endpoint:** `GET /api/materias?programaId=1` y `GET /api/facultades`
+* **Descripción:** Respuesta exitosa con las asignaturas del programa de Ingeniería de Sistemas con semestre de malla y créditos académicos.
+> **[Pegar aquí la Captura 3: Postman listando las Materias o Facultades con Status 200 OK]**
+
+---
+
+### 5.4 Caso de Éxito: Catálogo de Tutorías Disponibles (HTTP 200 OK)
+* **Endpoint:** `GET /api/tutorias?estado=DISPONIBLE`
+* **Descripción:** Verificación del catálogo de asesorías activas con control de cupos y modalidad (presencial o virtual).
+> **[Pegar aquí la Captura 4: Postman con Catálogo de Tutorías Disponibles]**
+
+---
+
+### 5.5 Caso de Error de Seguridad: Control de Acceso RBAC (HTTP 403 Forbidden)
+* **Endpoint:** `POST /api/facultades` (Ejecutado con Token de Rol `ESTUDIANTE`)
+* **Descripción:** Demostración de las reglas de autorización declarativa `@PreAuthorize`. El sistema bloquea al estudiante impidiendo la creación de facultades.
+> **[Pegar aquí la Captura 5: Postman con Error 403 Forbidden demostrando el bloqueo de rol]**
+
+---
+
+### 5.6 Resumen Global: Ejecución de la Suite Completa (Collection Runner / Newman)
+* **Descripción:** Ejecución automatizada de todas las peticiones y aserciones consecutivas de la colección, evidenciando el 100% de pruebas aprobadas sin fallos.
+> **[Pegar aquí la Captura 6: Ventana de Postman Runner con la barra verde y todos los checks pasados]**
+
+---
+
+### 5.7 Evidencia de Despliegue en la Nube: Base de Datos en AWS RDS (20 Puntos)
+* **Descripción:** Panel de control de Amazon Web Services (AWS Console) evidenciando la instancia de base de datos MySQL `tutorias_db` en estado **Available** con su endpoint y Security Group activo.
+> **[Pegar aquí la Captura 7: Consola de AWS RDS mostrando la instancia activa y disponible]**
+
