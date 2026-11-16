@@ -1,0 +1,805 @@
+{
+  "info": {
+    "name": "SGTU API — Suite Final de Pruebas End-to-End (Entrega 5 - Proyecto Final)",
+    "description": "Colección oficial de pruebas automatizadas de integración y seguridad para la Entrega 5 (Proyecto Final Integrado) del Sistema de Gestión de Tutorías Universitarias (SGTU) — UNIAJS (Semana 12).\n\nCubre el 100% de los flujos de negocio del sistema:\n- 00. Autenticación Stateless y Emisión de Token JWT (HS256) para Administrador, Docente y Estudiante.\n- 01. Gestión y Auditoría de Usuarios (ADMINISTRADOR).\n- 02. Estructura Académica Institucional (Facultades y Programas Académicos).\n- 03. Catálogo Curricular de Materias con créditos y semestres de malla.\n- 04. Perfiles Académicos Especializados (Docentes y Estudiantes).\n- 05. Oferta y Programación de Sesiones de Tutoría con control de aforo.\n- 06. Ciclo de Vida de Solicitudes de Tutoría (radicación, aceptación y cupos).\n- 07. Control de Acceso RBAC, validaciones Jakarta y manejo de errores RFC 7807 (401, 403, 400).\n\nTotalmente compatible con la nube en Render (https://sgtu-tutorias-universitarias.onrender.com) y entornos locales de desarrollo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00. Autenticación (Login JWT)",
+      "description": "Pruebas de emisión de tokens JWT para los tres roles institucionales y manejo de credenciales inválidas.",
+      "item": [
+        {
+          "name": "01. Login Administrador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Respuesta contiene token JWT válido', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('token');",
+                  "    pm.expect(json.token).to.be.a('string');",
+                  "    pm.expect(json.tipo).to.eql('Bearer');",
+                  "    pm.environment.set('token_admin', json.token);",
+                  "});",
+                  "pm.test('Rol institucional es ADMINISTRADOR', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.rol).to.eql('ADMINISTRADOR');",
+                  "});",
+                  "pm.test('Tiempo de respuesta adecuado', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(15000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@tutorias.com\",\n  \"password\": \"Admin123*\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. Login Docente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Respuesta contiene token JWT y rol DOCENTE', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('token');",
+                  "    pm.expect(json.rol).to.eql('DOCENTE');",
+                  "    pm.environment.set('token_docente', json.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"wadid.docente@tutorias.com\",\n  \"password\": \"Docente123*\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. Login Estudiante",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Respuesta contiene token JWT y rol ESTUDIANTE', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('token');",
+                  "    pm.expect(json.rol).to.eql('ESTUDIANTE');",
+                  "    pm.environment.set('token_estudiante', json.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"ana.estudiante@tutorias.com\",\n  \"password\": \"Estudiante123*\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. Login Fallido (Credenciales Inválidas)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Estructura de error estándar RFC 7807', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('status', 401);",
+                  "    pm.expect(json).to.have.property('error', 'Unauthorized');",
+                  "    pm.expect(json).to.have.property('message');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@tutorias.com\",\n  \"password\": \"PasswordErrado999\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01. Gestión de Usuarios (Admin)",
+      "description": "CRUD centralizado y auditoría de usuarios institucionales.",
+      "item": [
+        {
+          "name": "01. Listar Usuarios (Requiere Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Retorna lista de usuarios con contraseñas ocultas', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "    pm.expect(json.length).to.be.above(0);",
+                  "    pm.expect(json[0].password).to.be.undefined;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. Obtener Usuario por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Usuario contiene datos institucionales', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('correo');",
+                  "    pm.expect(json).to.have.property('rol');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/usuarios/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Estructura Académica (Facultades y Programas)",
+      "description": "Catálogo de unidades académicas mayores y carreras.",
+      "item": [
+        {
+          "name": "01. Listar Facultades",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Retorna al menos una facultad activa', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "    pm.expect(json.length).to.be.above(0);",
+                  "    pm.environment.set('facultad_id', json[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudiante}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/facultades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "facultades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. Listar Programas Académicos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Programas contienen relación con su facultad', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "    pm.expect(json.length).to.be.above(0);",
+                  "    pm.expect(json[0]).to.have.property('facultad');",
+                  "    pm.environment.set('programa_id', json[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudiante}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/programas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "programas"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Gestión de Materias",
+      "description": "Catálogo de asignaturas asignadas a programas y semestres de malla.",
+      "item": [
+        {
+          "name": "01. Listar Materias por Programa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Materias tienen semestre y créditos', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "    pm.expect(json.length).to.be.above(0);",
+                  "    pm.expect(json[0]).to.have.property('semestre');",
+                  "    pm.expect(json[0]).to.have.property('creditos');",
+                  "    pm.environment.set('materia_id', json[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudiante}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/materias?programaId=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "materias"
+              ],
+              "query": [
+                {
+                  "key": "programaId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. Obtener Materia por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Nombre y código existen', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('nombre');",
+                  "    pm.expect(json).to.have.property('codigo');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudiante}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/materias/{{materia_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "materias",
+                "{{materia_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Perfiles Académicos (Docentes y Estudiantes)",
+      "description": "Consulta de perfiles docentes y estudiantes vinculados al sistema.",
+      "item": [
+        {
+          "name": "01. Listar Docentes Tutores",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Docentes tienen especialidad y materias', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "    pm.expect(json.length).to.be.above(0);",
+                  "    pm.expect(json[0]).to.have.property('especialidad');",
+                  "    pm.environment.set('docente_id', json[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudiante}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/docentes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "docentes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. Listar Estudiantes (Requiere Docente o Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Estudiantes tienen código institucional y semestre', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "    pm.expect(json.length).to.be.above(0);",
+                  "    pm.expect(json[0]).to.have.property('codigoEstudiantil');",
+                  "    pm.environment.set('estudiante_id', json[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_docente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/estudiantes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "estudiantes"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Gestión de Tutorías",
+      "description": "Publicación y consulta de asesorías con control de cupos y modalidades.",
+      "item": [
+        {
+          "name": "01. Consultar Catálogo de Tutorías Disponibles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Tutorías devuelven información completa', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "    if (json.length > 0) {",
+                  "        pm.expect(json[0]).to.have.property('modalidad');",
+                  "        pm.expect(json[0]).to.have.property('estado');",
+                  "        pm.environment.set('tutoria_id', json[0].id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudiante}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tutorias?estado=DISPONIBLE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tutorias"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "DISPONIBLE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Solicitudes de Tutoría",
+      "description": "Flujo de solicitud por parte del estudiante y respuesta del docente.",
+      "item": [
+        {
+          "name": "01. Listar Solicitudes del Estudiante",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Retorna arreglo de solicitudes', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudiante}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/solicitudes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "solicitudes"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Pruebas de Seguridad y Control de Acceso (RBAC)",
+      "description": "Verificación de bloqueo en peticiones no autenticadas, tokens vencidos y violaciones de rol.",
+      "item": [
+        {
+          "name": "01. Petición Protegida Sin Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Mensaje informa token no proporcionado', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02. Estudiante Intentando Crear Facultad (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Error estandarizado Forbidden', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(403);",
+                  "    pm.expect(json.error).to.eql('Forbidden');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudiante}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\":\"Facultad No Autorizada\",\"codigo\":\"FAC-NOAUTH\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/facultades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "facultades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. Validación Jakarta: Login con Cuerpo Vacío (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code es 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Respuesta detalla errores de validación', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('status', 400);",
+                  "    pm.expect(json).to.have.property('errores');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
