@@ -10,7 +10,8 @@
 **Repositorio Oficial (Monorepo):** [https://github.com/WRivxs/SGTU-Tutorias-Universitarias](https://github.com/WRivxs/SGTU-Tutorias-Universitarias)  
 **Carpeta del Frontend:** [https://github.com/WRivxs/SGTU-Tutorias-Universitarias/tree/main/frontend](https://github.com/WRivxs/SGTU-Tutorias-Universitarias/tree/main/frontend)  
 **Aplicación Web Desplegada en Vivo (Vercel + HTTPS):** [https://sgtu-tutorias-universitarias.vercel.app](https://sgtu-tutorias-universitarias.vercel.app)  
-**Backend en Producción (Cloud Render):** [https://sgtu-tutorias-universitarias.onrender.com](https://sgtu-tutorias-universitarias.onrender.com)
+**Backend en Producción (Cloud Render):** [https://sgtu-tutorias-universitarias.onrender.com](https://sgtu-tutorias-universitarias.onrender.com)  
+**Video de Demostración en YouTube (Entrega 4):** [https://youtu.be/F6eHuuxO-tA](https://youtu.be/F6eHuuxO-tA)
 
 **Integrantes del Equipo de Desarrollo:**
 
@@ -591,11 +592,23 @@ El proyecto completo se encuentra versionado en el repositorio oficial del equip
 
 | Recurso | URL / Ubicación |
 |---|---|
+| **Video de Demostración en YouTube (Entrega 4)** | [https://youtu.be/F6eHuuxO-tA](https://youtu.be/F6eHuuxO-tA) |
 | **Frontend en producción (Vercel)** | [https://sgtu-tutorias-universitarias.vercel.app](https://sgtu-tutorias-universitarias.vercel.app) |
 | **Backend + Swagger UI (Render)** | [https://sgtu-tutorias-universitarias.onrender.com/swagger-ui/index.html](https://sgtu-tutorias-universitarias.onrender.com/swagger-ui/index.html) |
 | **Repositorio completo (GitHub)** | [https://github.com/WRivxs/SGTU-Tutorias-Universitarias](https://github.com/WRivxs/SGTU-Tutorias-Universitarias) |
 | **Código fuente del frontend** | [/frontend/ en el repositorio](https://github.com/WRivxs/SGTU-Tutorias-Universitarias/tree/main/frontend) |
 | **Código fuente del backend** | [/backend/ en el repositorio](https://github.com/WRivxs/SGTU-Tutorias-Universitarias/tree/main/backend) |
+
+### Video Demostrativo del Frontend Integrado (YouTube)
+
+- **Enlace Oficial:** [https://youtu.be/F6eHuuxO-tA](https://youtu.be/F6eHuuxO-tA)
+- **Título del Video:** `SGTU — Entrega 4: Frontend Angular Integrado con Backend Spring Boot y AWS RDS | UNIAJS`
+- **Marcas de Tiempo (Timestamps):**
+  - `0:00` — Presentación y Arquitectura Modular en Angular (VS Code)
+  - `0:40` — Módulo de Autenticación, Validaciones Reactivas y Rol Administrador
+  - `1:40` — Flujo del Docente Tutor: Programación de Tutorías y Gestión de Cupos
+  - `2:30` — Flujo del Estudiante: Búsqueda, Solicitudes y Diseño Responsivo
+  - `3:20` — Evidencia de Integración Real (Network F12 - Cero Mocks) y Cierre
 
 ### Credenciales de Demostración
 

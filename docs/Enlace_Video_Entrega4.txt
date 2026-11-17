@@ -1,0 +1,40 @@
+﻿================================================================================
+SGTU — SISTEMA DE GESTIÓN DE TUTORÍAS UNIVERSITARIAS (UNIAJS)
+ENTREGA 4: FRONTEND ANGULAR INTEGRADO (SEMANA 10)
+================================================================================
+
+ENLACE OFICIAL AL VIDEO DEMOSTRATIVO EN YOUTUBE:
+https://youtu.be/F6eHuuxO-tA
+
+Título del Video:
+SGTU — Entrega 4: Frontend Angular Integrado con Backend Spring Boot y AWS RDS | UNIAJS
+
+Duración: 3:35 min
+Resolución: 1080p Full HD
+
+Marcas de Tiempo (Timestamps):
+0:00 - Presentación y Arquitectura Modular en Angular (VS Code - core, modules, shared)
+0:40 - Módulo de Autenticación, Validaciones Reactivas y Rol Administrador
+1:40 - Flujo del Docente Tutor: Programación de Tutorías y Gestión de Cupos
+2:30 - Flujo del Estudiante: Búsqueda, Solicitudes y Diseño Responsivo
+3:20 - Evidencia de Integración Real (Network F12 - Cero Mocks) y Cierre
+
+--------------------------------------------------------------------------------
+ENLACES EN PRODUCCIÓN:
+- Frontend en Vivo (Vercel con HTTPS): https://sgtu-tutorias-universitarias.vercel.app
+- Backend API REST + Swagger UI (Render): https://sgtu-tutorias-universitarias.onrender.com/swagger-ui/index.html
+- Repositorio Oficial (GitHub Monorepo): https://github.com/WRivxs/SGTU-Tutorias-Universitarias
+
+CREDENCIALES DE PRUEBA:
+- Administrador: admin@uniajs.edu.co / admin123
+- Docente Tutor: wadid.rivas@uniajs.edu.co / docente123
+- Estudiante: estudiante@uniajs.edu.co / estudiante123
+
+INTEGRANTES DEL EQUIPO:
+- Wadid Rivas Payares (Arquitectura e Integración Backend-Frontend)
+- Eduardo Julio Bettin Avilez (Líder Técnico Frontend y UI/UX)
+- Azael Espitia Toribio (Persistencia de Datos y AWS RDS)
+- Jhon Jader Bertel Ortega (Aseguramiento de Calidad y Pruebas QA)
+
+DOCENTE EVALUADOR: Ing. Jaider de la Rosa Bertel
+================================================================================
