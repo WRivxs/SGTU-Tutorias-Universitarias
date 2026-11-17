@@ -53,3 +53,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+
+# Temporary Media & Archives
+*.zip
+*.mp4
+~$*.docx
+
